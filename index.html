@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Made Junindra — Portofolio</title>
+  <meta name="description" content="Portofolio Made Junindra: web app, PWA, website bisnis, dan aplikasi AI.">
+  <meta property="og:title" content="Made Junindra — Portofolio">
+  <meta property="og:description" content="Web App · PWA · Website · AI">
+  <meta property="og:image" content="/images/og.png">
+  <meta name="theme-color" content="#8fc3f0">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gluten:wght@500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Great+Vibes&family=Poppins:wght@600;800&family=Sacramento&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navigasi kaca melayang -->
+  <header class="nav">
+    <a href="#top" class="nav-brand">MJ</a>
+    <nav>
+      <a href="#isi">Proyek</a>
+      <a href="#tentang">Tentang</a>
+      <a href="#kontak">Kontak</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ COVER ============ -->
+    <section class="cover" id="top">
+      <div class="sky"></div>
+      <div class="sun-glow"></div>
+      <div class="clouds" aria-hidden="true">
+        <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
+        <span class="cloud c4"></span><span class="cloud c5"></span>
+      </div>
+      <div class="bubbles" aria-hidden="true"></div>
+
+      <div class="hero-title">
+        <h1 class="sr-only">Portofolio Made Junindra</h1>
+        <svg id="chromeTitle" aria-hidden="true"></svg>
+        <p class="hero-sub">Karya pilihan · Web App · PWA · Website · AI</p>
+      </div>
+
+      <canvas class="meadow" data-seed="7" data-layout="cover"></canvas>
+
+      <div class="cover-foot wrap">
+        <p>Made Junindra&nbsp;|&nbsp;Web &amp; App Developer<br>Selected Works&nbsp;|&nbsp;2024 – 2026</p>
+        <p class="r">Web App&nbsp;|&nbsp;Progressive Web App<br>Website&nbsp;|&nbsp;AI Assistant</p>
+      </div>
+      <a href="#isi" class="scroll-cue" aria-label="Gulir ke daftar proyek"><span></span></a>
+    </section>
+
+    <!-- ============ DAFTAR ISI ============ -->
+    <section class="toc" id="isi">
+      <div class="sky soft"></div>
+      <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
+      <div class="wrap toc-inner reveal">
+        <p class="kicker">Daftar Isi</p>
+        <h2 class="section-title"><span class="script">Selected</span> Projects</h2>
+        <ol class="toc-list" id="tocList"></ol>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE PROYEK (dibuat oleh main.js) ============ -->
+    <div id="slides"></div>
+
+    <!-- ============ TENTANG ============ -->
+    <section class="about" id="tentang">
+      <div class="sky"></div>
+      <div class="clouds" aria-hidden="true"><span class="cloud c1"></span><span class="cloud c3"></span><span class="cloud c5"></span></div>
+      <div class="bubbles" aria-hidden="true"></div>
+      <div class="wrap about-inner">
+        <div class="glass-card reveal">
+          <span class="sparkle s1"></span>
+          <p class="kicker">Tentang Saya</p>
+          <h2 class="section-title"><span class="script">Hello,</span> I'm Made</h2>
+          <p>
+            Saya developer yang senang mengubah kebutuhan sehari-hari menjadi aplikasi: catatan usaha fotokopi,
+            keuangan pribadi, rental kamera, sampai alat bantu trading. Setiap proyek dimulai dari satu pertanyaan
+            sederhana: <em>apa yang paling merepotkan sekarang?</em>
+          </p>
+          <p>
+            Saya mengerjakan dari desain antarmuka hingga online: PWA yang bisa dipasang di HP,
+            sinkronisasi ke Google Sheets, integrasi API & AI, dan website bisnis dengan Laravel.
+          </p>
+        </div>
+        <div class="skill-stack reveal">
+          <div class="glass-card skill"><span class="pill pink">Frontend</span><p>HTML · CSS · JavaScript · PWA · Responsive UI</p></div>
+          <div class="glass-card skill"><span class="pill blue">Backend</span><p>Node.js · Laravel / PHP · REST API · Apps Script</p></div>
+          <div class="glass-card skill"><span class="pill pink">AI & Cloud</span><p>LLM · Microsoft 365 · SharePoint · Vercel · GitHub Actions</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KONTAK ============ -->
+    <section class="contact" id="kontak">
+      <div class="sky soft"></div>
+      <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
+      <div class="wrap contact-inner reveal">
+        <p class="kicker">Kontak</p>
+        <h2 class="section-title"><span class="script">Let's</span> Work Together</h2>
+        <p class="lead">Punya ide aplikasi atau website? Ceritakan kebutuhan Anda, saya bantu dari konsep sampai online.</p>
+        <div class="contact-links">
+          <!-- Ganti dengan kontak Anda -->
+          <a class="btn btn-blue" href="https://wa.me/62XXXXXXXXXX" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-glass" href="mailto:email@anda.com">Email</a>
+          <a class="btn btn-glass" href="https://github.com/MadeJunindra" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <canvas class="meadow" data-seed="99" data-layout="footer"></canvas>
+      <div class="butterflies" data-count="3"></div>
+      <footer class="footer wrap">
+        <span>© <span id="year"></span> Made Junindra</span>
+        <span class="script-sm">Thank you</span>
+      </footer>
+    </section>
+  </main>
+
+  <script src="projects.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
