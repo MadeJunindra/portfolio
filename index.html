@@ -2,156 +2,230 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Made Junindra — Portofolio</title>
-  <meta name="description" content="Portofolio Made Junindra: web app, PWA, website bisnis, dan aplikasi AI.">
-  <meta property="og:title" content="Made Junindra — Portofolio">
-  <meta property="og:description" content="Web App · PWA · Website · AI">
-  <meta property="og:image" content="/images/og.png">
-  <meta name="theme-color" content="#8fc3f0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dejun — Made Junindra · Web &amp; App Developer</title>
+  <meta name="description" content="Portofolio Dejun (Made Junindra), Web & App Developer: aplikasi web, PWA, website bisnis, dan integrasi AI.">
+  <meta property="og:title" content="Dejun — Web & App Developer">
+  <meta property="og:description" content="Aplikasi web, PWA, website bisnis, dan integrasi AI — rapi, cepat, dan benar-benar dipakai.">
+  <meta property="og:image" content="/images/og.jpg">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#f3f2f8">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <!-- Font & gambar judul disimpan lokal, dimuat lebih dulu -->
-  <link rel="preload" href="fonts/dmsans-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/poppins-800-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/greatvibes-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="images/title/word.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="preload" href="fonts/jakarta.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <a class="skip-link" href="#isi">Lewati ke konten</a>
+  <a class="skip-link" href="#tentang">Lewati ke konten</a>
 
-  <!-- Loader pembuka -->
-  <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <span class="loader-mark">MJ</span>
-      <span class="loader-count"><span id="loaderNum">0</span>%</span>
-      <span class="loader-bar"><i id="loaderBar"></i></span>
-    </div>
+  <!-- Ikon (dipakai ulang dengan <use>) -->
+  <svg width="0" height="0" class="sprite" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 18.5 5.3 15A7.5 7.5 0 1 1 9 18.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c.6 4.8 2.9 7.3 8 8-5.1.7-7.4 3.2-8 8-.6-4.8-2.9-7.3-8-8 5.1-.7 7.4-3.2 8-8z" fill="currentColor"/></symbol>
+    <symbol id="i-git" viewBox="0 0 24 24"><path d="M9 19c-4 1.3-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 0 0-6 0C6.8 2.3 5.8 2.6 5.8 2.6a4.3 4.3 0 0 0-.1 3.2A4.6 4.6 0 0 0 4.4 9c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2v3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <!-- Latar: cahaya lembut + bola kaca -->
+  <div class="backdrop" aria-hidden="true">
+    <span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="glow g4"></span>
+    <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
   </div>
-
-  <!-- Progres scroll, kursor, kembali ke atas -->
   <div class="progress" aria-hidden="true"><i id="progress"></i></div>
-  <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"><span class="cursor-ring-in"><b class="cursor-label"></b></span></span></div>
-  <a href="#top" class="to-top" id="toTop" aria-label="Kembali ke atas">
-    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" id="topRing" cx="24" cy="24" r="21"/><path d="M24 31V17m-6 6 6-6 6 6"/></svg>
-  </a>
 
-  <!-- Navigasi kaca melayang -->
-  <header class="nav">
-    <a href="#top" class="nav-brand">MJ</a>
-    <nav>
-      <a href="#isi">Proyek</a>
-      <a href="#tentang">Tentang</a>
-      <a href="#kontak">Kontak</a>
+  <!-- ============ NAV ============ -->
+  <header class="nav-wrap">
+    <nav class="nav glass" aria-label="Navigasi utama">
+      <a href="#top" class="brand" aria-label="Kembali ke atas">
+        <span class="brand-mark">DJ</span>
+        <span class="brand-text"><b data-site="nick"></b><small data-site="role"></small></span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#top" class="active">Beranda</a>
+        <a href="#tentang">Tentang</a>
+        <a href="#layanan">Layanan</a>
+        <a href="#karya">Karya</a>
+        <a href="#proses">Proses</a>
+        <a href="#kontak">Kontak</a>
+      </div>
+      <a href="#kontak" class="btn btn-glass nav-cta">Hubungi Saya <svg><use href="#i-arrow"/></svg></a>
+      <button class="menu-btn" id="menuBtn" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks"><svg><use href="#i-menu"/></svg></button>
     </nav>
   </header>
 
-  <main>
-    <!-- ============ COVER ============ -->
-    <section class="cover" id="top">
-      <div class="sky"></div>
-      <div class="sun-glow"></div>
-      <div class="clouds" aria-hidden="true">
-        <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
-        <span class="cloud c4"></span><span class="cloud c5"></span>
-      </div>
-      <div class="bubbles" aria-hidden="true"></div>
-
-      <div class="hero-title">
-        <h1 class="sr-only">Portofolio Made Junindra</h1>
-        <div class="title-art" id="chromeTitle" aria-hidden="true">
-          <img class="title-word" src="images/title/word.webp" alt="" width="1700" height="931" decoding="async" fetchpriority="high">
-          <span class="deco d1"><img class="deco-float" src="images/title/d1.webp" alt="" decoding="async"></span>
-          <span class="deco d2"><img class="deco-float" src="images/title/d2.webp" alt="" decoding="async"></span>
-          <span class="deco d3"><img class="deco-twinkle" src="images/title/d3.webp" alt="" decoding="async"></span>
-          <span class="deco d4"><img class="deco-twinkle" src="images/title/d4.webp" alt="" decoding="async"></span>
-          <span class="deco d5"><img class="deco-float" src="images/title/d5.webp" alt="" decoding="async"></span>
-          <span class="deco d6"><img class="deco-float" src="images/title/d6.webp" alt="" decoding="async"></span>
-          <span class="deco d7"><img class="deco-float" src="images/title/d7.webp" alt="" decoding="async"></span>
+  <main id="top">
+    <!-- ============ HERO ============ -->
+    <section class="hero container">
+      <div class="hero-text">
+        <p class="eyebrow">Halo, saya</p>
+        <h1 class="hero-name"><span class="hn-nick" data-site="nick"></span><span class="hero-fullname" data-site="name"></span></h1>
+        <p class="hero-role grad-text" data-site="role"></p>
+        <p class="hero-intro" data-site="intro"></p>
+        <div class="hero-cta">
+          <a href="#karya" class="btn btn-dark magnetic">Lihat Karya <svg><use href="#i-arrow"/></svg></a>
+          <a href="#kontak" class="btn btn-glass magnetic" id="ctaSecondary">Mulai Proyek <svg><use href="#i-arrow"/></svg></a>
         </div>
-        <p class="hero-sub">Karya pilihan · Web App · PWA · Website · AI</p>
+        <div class="stack-row">
+          <span class="stack-label">Stack utama</span>
+          <ul class="stack-list" id="stackList"></ul>
+        </div>
       </div>
 
-      <canvas class="meadow" data-seed="7" data-layout="cover"></canvas>
-
-      <div class="cover-foot wrap">
-        <p>Made Junindra&nbsp;|&nbsp;Web &amp; App Developer<br>Selected Works&nbsp;|&nbsp;2024 – 2026</p>
-        <p class="r">Web App&nbsp;|&nbsp;Progressive Web App<br>Website&nbsp;|&nbsp;AI Assistant</p>
+      <div class="hero-visual">
+        <div class="portrait glass" id="portrait">
+          <div class="portrait-inner" id="portraitInner"></div>
+        </div>
+        <div class="float-card glass fc-exp">
+          <b class="fc-big" id="fcExpNum"></b>
+          <small id="fcExpLabel"></small>
+        </div>
+        <div class="float-card glass fc-status" id="fcStatus">
+          <span class="dot-live"></span>
+          <span><b>Terbuka untuk proyek</b><small>Freelance &amp; kolaborasi</small></span>
+        </div>
+        <div class="float-card glass fc-focus">
+          <small>Fokus</small>
+          <b>Cepat · Rapi · Aman</b>
+          <span class="fc-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+        <span class="spark-orb glass" aria-hidden="true"><svg><use href="#i-spark"/></svg></span>
       </div>
-      <a href="#isi" class="scroll-cue" aria-label="Gulir ke daftar proyek"><span></span></a>
     </section>
-
-    <!-- ============ DAFTAR ISI ============ -->
-    <section class="toc" id="isi">
-      <div class="sky soft"></div>
-      <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
-      <div class="wrap toc-inner">
-        <p class="kicker">Daftar Isi</p>
-        <h2 class="section-title"><span class="script">Selected</span> Projects</h2>
-        <ol class="toc-list" id="tocList"></ol>
-      </div>
-      <div class="marquee" aria-hidden="true">
-        <div class="marquee-track" id="marquee"></div>
-      </div>
-    </section>
-
-    <!-- ============ SLIDE PROYEK (dibuat oleh main.js) ============ -->
-    <div id="slides"></div>
 
     <!-- ============ TENTANG ============ -->
-    <section class="about" id="tentang">
-      <div class="sky"></div>
-      <div class="clouds" aria-hidden="true"><span class="cloud c1"></span><span class="cloud c3"></span><span class="cloud c5"></span></div>
-      <div class="bubbles" aria-hidden="true"></div>
-      <div class="wrap about-inner">
-        <div class="glass-card about-card">
-          <span class="sparkle s1"></span>
-          <p class="kicker">Tentang Saya</p>
-          <h2 class="section-title"><span class="script">Hello,</span> I'm Made</h2>
-          <p>
-            Saya developer yang senang mengubah kebutuhan sehari-hari menjadi aplikasi: catatan usaha fotokopi,
-            keuangan pribadi, rental kamera, sampai alat bantu trading. Setiap proyek dimulai dari satu pertanyaan
-            sederhana: <em>apa yang paling merepotkan sekarang?</em>
-          </p>
-          <p>
-            Saya mengerjakan dari desain antarmuka hingga online: PWA yang bisa dipasang di HP,
-            sinkronisasi ke Google Sheets, integrasi API & AI, dan website bisnis dengan Laravel.
-          </p>
+    <section class="section container" id="tentang">
+      <div class="panel glass about">
+        <div class="about-left">
+          <p class="eyebrow">Tentang Saya</p>
+          <h2 class="h2">Tegas dalam eksekusi,<br>kreatif dalam solusi.</h2>
+          <div class="stats" id="stats"></div>
         </div>
-        <div class="skill-stack">
-          <div class="glass-card skill"><span class="pill pink">Frontend</span><p>HTML · CSS · JavaScript · PWA · Responsive UI</p></div>
-          <div class="glass-card skill"><span class="pill blue">Backend</span><p>Node.js · Laravel / PHP · REST API · Apps Script</p></div>
-          <div class="glass-card skill"><span class="pill pink">AI & Cloud</span><p>LLM · Microsoft 365 · SharePoint · Vercel · GitHub Actions</p></div>
+        <div class="about-right">
+          <p>Saya developer yang mengubah kebutuhan nyata menjadi aplikasi: catatan usaha, keuangan pribadi, alat analisa pasar, sampai asisten AI untuk kantor. Setiap proyek dimulai dari satu pertanyaan sederhana — <em>apa yang paling merepotkan sekarang?</em></p>
+          <p>Saya mengerjakan dari desain antarmuka hingga online: PWA yang bisa dipasang di HP, integrasi API &amp; AI, sinkronisasi data, dan website bisnis yang cepat serta aman.</p>
+          <a href="#karya" class="btn btn-glass magnetic">Lihat Karya Saya <svg><use href="#i-arrow"/></svg></a>
         </div>
       </div>
+    </section>
+
+    <!-- ============ LAYANAN ============ -->
+    <section class="section container" id="layanan">
+      <div class="sec-head">
+        <div><p class="eyebrow">Yang Saya Kerjakan</p><h2 class="h2">Layanan</h2></div>
+      </div>
+      <div class="services">
+        <article class="card glass service">
+          <span class="ico ico-a"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M7 9h6M7 13h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <h3>Web Application</h3>
+          <p>Aplikasi web untuk kebutuhan bisnis &amp; operasional: dashboard, pencatatan, analisa data.</p>
+          <span class="card-arrow"><svg><use href="#i-arrow"/></svg></span>
+        </article>
+        <article class="card glass service">
+          <span class="ico ico-b"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 18.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <h3>Progressive Web App</h3>
+          <p>Aplikasi yang bisa dipasang di HP, jalan offline, dan update otomatis — tanpa app store.</p>
+          <span class="card-arrow"><svg><use href="#i-arrow"/></svg></span>
+        </article>
+        <article class="card glass service">
+          <span class="ico ico-c"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <h3>Website Bisnis</h3>
+          <p>Landing page &amp; company profile yang cepat, responsif, dan siap mendatangkan pelanggan.</p>
+          <span class="card-arrow"><svg><use href="#i-arrow"/></svg></span>
+        </article>
+        <article class="card glass service">
+          <span class="ico ico-d"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3v4M9 12.5h.01M15 12.5h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+          <h3>Integrasi AI</h3>
+          <p>Asisten AI yang terhubung ke dokumen &amp; sistem Anda: mencari, merangkum, dan menyusun draf.</p>
+          <span class="card-arrow"><svg><use href="#i-arrow"/></svg></span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ TOOLS ============ -->
+    <section class="section container">
+      <div class="panel glass tools-panel">
+        <div class="sec-head"><div><p class="eyebrow">Tools &amp; Teknologi</p><h2 class="h2">Teknologi yang Saya Pakai</h2></div></div>
+        <ul class="tools" id="tools"></ul>
+      </div>
+    </section>
+
+    <!-- ============ KARYA ============ -->
+    <section class="section container" id="karya">
+      <div class="sec-head">
+        <div><p class="eyebrow">Proyek Pilihan</p><h2 class="h2">Karya Terpilih</h2></div>
+        <div class="filters glass" id="filters" role="tablist" aria-label="Filter kategori"></div>
+      </div>
+      <div class="works" id="works"></div>
+      <div class="works-more"><button class="btn btn-glass magnetic" id="moreBtn" type="button">Lihat Semua Proyek <svg><use href="#i-arrow"/></svg></button></div>
+    </section>
+
+    <!-- ============ PROSES ============ -->
+    <section class="section container" id="proses">
+      <div class="sec-head"><div><p class="eyebrow">Cara Saya Bekerja</p><h2 class="h2">Proses yang Saya Ikuti</h2></div></div>
+      <ol class="process">
+        <li class="card glass step"><span class="step-n">01</span><h3>Pahami</h3><p>Menggali masalah, tujuan, dan siapa penggunanya.</p></li>
+        <li class="card glass step"><span class="step-n">02</span><h3>Rancang</h3><p>Alur, struktur data, dan desain antarmuka yang jelas.</p></li>
+        <li class="card glass step"><span class="step-n">03</span><h3>Bangun</h3><p>Kode yang rapi, cepat, dan aman — diuji di HP &amp; desktop.</p></li>
+        <li class="card glass step"><span class="step-n">04</span><h3>Luncurkan</h3><p>Online di domain Anda, lengkap dengan panduan pakai.</p></li>
+        <li class="card glass step"><span class="step-n">05</span><h3>Kembangkan</h3><p>Evaluasi dari pemakaian nyata, lalu terus diperbaiki.</p></li>
+      </ol>
+    </section>
+
+    <!-- ============ TESTIMONI (muncul jika ada data asli) ============ -->
+    <section class="section container" id="testimoni" hidden>
+      <div class="sec-head"><div><p class="eyebrow">Testimoni</p><h2 class="h2">Kata Klien</h2></div></div>
+      <div class="testimonials" id="testimonials"></div>
     </section>
 
     <!-- ============ KONTAK ============ -->
-    <section class="contact" id="kontak">
-      <div class="sky soft"></div>
-      <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
-      <div class="wrap contact-inner">
-        <p class="kicker">Kontak</p>
-        <h2 class="section-title"><span class="script">Let's</span> Work Together</h2>
-        <p class="lead">Punya ide aplikasi atau website? Ceritakan kebutuhan Anda, saya bantu dari konsep sampai online.</p>
-        <div class="contact-links">
-          <!-- Ganti dengan kontak Anda -->
-          <a class="btn btn-blue" href="https://wa.me/62XXXXXXXXXX" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a class="btn btn-glass" href="mailto:email@anda.com">Email</a>
-          <a class="btn btn-glass" href="https://github.com/MadeJunindra" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <section class="section container" id="kontak">
+      <div class="panel glass contact">
+        <div class="contact-info">
+          <p class="eyebrow">Mari Terhubung</p>
+          <h2 class="h2">Punya ide proyek?<br>Mari wujudkan bersama.</h2>
+          <ul class="contact-list">
+            <li><span class="ci"><svg><use href="#i-mail"/></svg></span><a id="cEmail" href="#kontak"></a></li>
+            <li><span class="ci"><svg><use href="#i-chat"/></svg></span><a id="cWa" href="#kontak" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+            <li><span class="ci"><svg><use href="#i-git"/></svg></span><a id="cGit" href="#kontak" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><span class="ci"><svg><use href="#i-pin"/></svg></span><span data-site="location"></span></li>
+          </ul>
         </div>
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="row2">
+            <label><span>Nama</span><input name="name" type="text" maxlength="80" autocomplete="name" required></label>
+            <label><span>Email</span><input name="email" type="email" maxlength="120" autocomplete="email" required></label>
+          </div>
+          <label><span>Jenis proyek</span>
+            <select name="type">
+              <option>Web Application</option><option>Progressive Web App</option><option>Website Bisnis</option><option>Integrasi AI</option><option>Lainnya</option>
+            </select>
+          </label>
+          <label><span>Pesan</span><textarea name="message" rows="5" maxlength="1500" required></textarea></label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-dark magnetic" data-via="wa">Kirim via WhatsApp <svg><use href="#i-send"/></svg></button>
+            <button type="submit" class="btn btn-glass magnetic" data-via="email">Kirim via Email</button>
+          </div>
+          <p class="form-note" id="formNote" role="status" aria-live="polite">Pesan dibuka di WhatsApp / aplikasi email Anda — tidak ada data yang disimpan di website ini.</p>
+        </form>
       </div>
-      <canvas class="meadow" data-seed="99" data-layout="footer"></canvas>
-      <div class="butterflies" data-count="3"></div>
-      <footer class="footer wrap">
-        <span>© <span id="year"></span> Made Junindra</span>
-        <span class="script-sm">Thank you</span>
-      </footer>
     </section>
   </main>
 
-  <!-- Library disimpan lokal (bukan CDN) agar aman dari perubahan pihak ketiga -->
+  <footer class="footer container">
+    <span>© <span id="year"></span> <span data-site="name"></span> · <span data-site="nick"></span></span>
+    <a href="#top">Kembali ke atas ↑</a>
+  </footer>
+
+  <!-- Modal detail proyek -->
+  <dialog class="modal" id="modal" aria-labelledby="modalTitle">
+    <div class="modal-body" id="modalBody"></div>
+  </dialog>
+
   <script src="vendor/gsap.min.js" defer></script>
   <script src="vendor/ScrollTrigger.min.js" defer></script>
   <script src="vendor/lenis.min.js" defer></script>

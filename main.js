@@ -1,189 +1,208 @@
+/* =========================================================
+   main.js — mengisi halaman dari data di projects.js
+   Keamanan: semua teks di-escape, URL hanya https://,
+   gambar hanya dari folder images/, warna hanya hex.
+   ========================================================= */
 (function () {
-  /* ---------- Sanitasi data (keamanan) ----------
-     Semua isi projects.js divalidasi sebelum masuk ke HTML:
-     - URL hanya boleh https:// (menolak javascript:, data:, dll.)
-     - warna hanya format hex, gambar hanya dari folder images/
-     - teks selalu di-escape */
+  "use strict";
+
+  /* ---------- Sanitasi ---------- */
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const safeUrl = (u) => { try { const x = new URL(String(u)); return x.protocol === "https:" ? x.href : ""; } catch (e) { return ""; } };
-  const safeColor = (c) => (/^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : "#3355d1");
+  const safeColor = (c) => (/^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : "#7258ff");
   const safeImg = (s) => (/^images\/[\w.-]+\.(png|jpe?g|webp|avif|svg)$/i.test(String(s)) ? s : "");
+  const safeFile = (s) => (/^files\/[\w.-]+\.pdf$/i.test(String(s)) ? s : "");
+  const isEmail = (s) => /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]{2,}$/.test(String(s));
+  const $ = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+
+  const RAW = window.SITE || {};
+  const SITE = {
+    nick: String(RAW.nick || "Dejun").slice(0, 40),
+    name: String(RAW.name || "").slice(0, 80),
+    role: String(RAW.role || "").slice(0, 80),
+    intro: String(RAW.intro || "").slice(0, 300),
+    photo: safeImg(RAW.photo),
+    email: isEmail(RAW.email) ? String(RAW.email) : "",
+    whatsapp: String(RAW.whatsapp || "").replace(/\D/g, ""),
+    location: String(RAW.location || "").slice(0, 80),
+    github: safeUrl(RAW.github),
+    cv: safeFile(RAW.cv),
+    years: String(RAW.yearsExperience || "").slice(0, 6),
+    available: RAW.available !== false,
+  };
   const projects = (Array.isArray(window.PROJECTS) ? window.PROJECTS : []).map((p) => ({
     ...p,
     accent: safeColor(p.accent),
     image: safeImg(p.image),
     links: Object.fromEntries(Object.entries(p.links || {}).map(([k, u]) => [k, safeUrl(u)]).filter(([, u]) => u)),
   }));
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const pad = (n) => String(n).padStart(2, "0");
-  const rngFrom = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const testimonials = (Array.isArray(window.TESTIMONIALS) ? window.TESTIMONIALS : []).filter((t) => t && t.quote && t.name);
 
+  /* ---------- Profil ---------- */
+  $$("[data-site]").forEach((el) => { el.textContent = SITE[el.dataset.site] || ""; });
+  document.title = `${SITE.nick} — ${SITE.name} · ${SITE.role}`;
+  $("#fcStatus").hidden = !SITE.available;
+
+  const portrait = $("#portraitInner");
+  if (SITE.photo) {
+    portrait.innerHTML = `<img src="${esc(SITE.photo)}" alt="Foto ${esc(SITE.name)}" width="800" height="1000" decoding="async" fetchpriority="high">`;
+  } else {
+    const ini = (SITE.nick.match(/[A-Za-z]/g) || ["D", "J"]).slice(0, 1).join("") + (SITE.nick.length > 2 ? SITE.nick.replace(/[^A-Za-z]/g, "").slice(2, 3) : "");
+    portrait.innerHTML = `<div class="monogram"><span class="grid-lines"></span><div><b>${esc(ini.toUpperCase() || "DJ")}</b><small>${esc(SITE.role)}</small></div></div>`;
+  }
+  if (SITE.cv) {
+    const cta = $("#ctaSecondary");
+    cta.href = SITE.cv; cta.setAttribute("download", "");
+    cta.innerHTML = `Unduh CV <svg><use href="#i-arrow"/></svg>`;
+  }
+
+  /* ---------- Stack & tools ---------- */
+  const STACK = ["JavaScript", "Node.js", "Laravel", "PWA", "AI / LLM", "Vercel"];
+  $("#stackList").innerHTML = STACK.map((s) => `<li>${esc(s)}</li>`).join("");
+  const TOOLS = [
+    ["HTML", "H5", "#e8590c"], ["CSS", "C3", "#3b5bdb"], ["JavaScript", "JS", "#d9a400"], ["Node.js", "N", "#2f9e44"],
+    ["Laravel", "L", "#e03131"], ["PHP", "php", "#5f3dc4"], ["PWA", "PWA", "#7258ff"], ["GSAP", "GS", "#37b24d"],
+    ["Apps Script", "AS", "#1c7ed6"], ["GitHub Actions", "GA", "#212529"], ["Vercel", "▲", "#0d0e1a"], ["AI / LLM", "AI", "#9b59f6"],
+  ];
+  $("#tools").innerHTML = TOOLS.map(([name, ab, col]) => `<li class="tool"><span class="tool-badge" style="background:${safeColor(col)}">${esc(ab)}</span><span>${esc(name)}</span></li>`).join("");
+
+  /* ---------- Statistik (data asli) ---------- */
+  const techCount = new Set(projects.flatMap((p) => p.tech || [])).size;
+  const cats = new Set(projects.map((p) => p.category)).size;
+  const stats = [];
+  if (SITE.years) stats.push([SITE.years, "Tahun pengalaman"]);
+  stats.push([String(projects.length), "Proyek di portofolio"], [techCount + "+", "Teknologi dipakai"]);
+  if (!SITE.years) stats.push([String(cats), "Jenis produk"]);
+  $("#stats").innerHTML = stats.slice(0, 3).map(([n, l]) => `<div class="stat"><b data-count="${esc(n)}">${esc(n)}</b><small>${esc(l)}</small></div>`).join("");
+  $("#fcExpNum").textContent = SITE.years || String(projects.length);
+  $("#fcExpLabel").textContent = SITE.years ? "Tahun pengalaman" : "Proyek dikerjakan";
+
+  /* ---------- Ikon proyek ---------- */
   const ICONS = {
-    chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
-    wallet: '<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.2" fill="currentColor"/>',
-    receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
-    camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
-    sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 1.8 1.8.7-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/>',
-    bot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4"/><circle cx="9" cy="13.5" r="1.2" fill="currentColor"/><circle cx="15" cy="13.5" r="1.2" fill="currentColor"/>',
-    car: '<path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v3H3z"/><circle cx="7.5" cy="13" r="1" fill="currentColor"/><circle cx="16.5" cy="13" r="1" fill="currentColor"/>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
-    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',
-    home: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>', wallet: '<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18"/>',
+    receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>', camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', bot: '<rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4"/>',
+    car: '<path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v3H3z"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/>', home: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
   };
-  const icon = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.globe}</svg>`;
+  const CAT = { all: "Semua", webapp: "Web App", pwa: "PWA", website: "Website", ai: "AI", desktop: "Desktop" };
 
-  /* ---------- Daftar isi ---------- */
-  document.getElementById("tocList").innerHTML = projects.map((p, i) => `
-    <li><a href="#p-${i + 1}">
-      <span class="toc-num">${pad(i + 1)}</span>
-      <span class="toc-title">${esc(p.title)}<span class="toc-sub">${esc(p.tagline)}</span></span>
-      <span class="toc-arrow">→</span>
-    </a></li>`).join("");
-
-  /* ---------- Mockup ---------- */
+  /* ---------- Kartu proyek ---------- */
   function screen(p, kind) {
     if (p.image) return `<img src="${esc(p.image)}" alt="Tampilan ${esc(p.title)}" loading="lazy" decoding="async" width="780" height="1560">`;
-    const host = (p.links && p.links.live) ? p.links.live.replace(/^https?:\/\//, "") : p.title.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".app";
-    const bar = kind === "laptop" ? `<div class="mock-bar"><i></i><i></i><i></i><span>${esc(host)}</span></div>` : "";
-    const tab = kind === "phone" ? `<div class="mock-tab"><i></i><i></i><i></i><i></i></div>` : "";
-    return `<div class="mock" style="--c:${esc(p.accent)}">${bar}
-      <div class="mock-hero"><b>${esc(p.title)}</b><small>${esc(p.tagline)}</small><span class="cta">Mulai →</span>${icon(p.icon)}</div>
-      <div class="mock-row"><div></div><div></div>${kind === "laptop" ? "<div></div>" : ""}</div>
-      <div class="mock-list"><div></div><div></div>${kind === "phone" ? "<div></div>" : ""}</div>${tab}</div>`;
+    return `<div class="mock" style="--c:${p.accent}">${kind === "laptop" ? "<div class=\"mock-top\"><i></i><i></i><i></i></div>" : ""}
+      <div class="mock-hero"><b>${esc(p.title)}</b><small>${esc(p.tagline)}</small></div>
+      <div class="mock-row"><i></i><i></i>${kind === "laptop" ? "<i></i>" : ""}</div><div class="mock-line"></div><div class="mock-line"></div></div>`;
   }
-  function device(p) {
-    if (p.device === "laptop") return `<div class="laptop"><div class="lid"><div class="lid-screen">${screen(p, "laptop")}</div></div><div class="base"></div></div>`;
-    return `<div class="phone"><div class="phone-screen"><span class="island"></span>${screen(p, "phone")}</div></div>`;
+  const device = (p) => (p.device === "laptop"
+    ? `<div class="dev dev-laptop"><div class="lid"><div class="scr">${screen(p, "laptop")}</div></div><div class="base"></div></div>`
+    : `<div class="dev dev-phone"><div class="scr">${screen(p, "phone")}</div></div>`);
+  const thumb = (p) => `<div class="thumb" style="--c:${p.accent}">${device(p)}</div>`;
+
+  const worksEl = $("#works"), moreBtn = $("#moreBtn"), filtersEl = $("#filters");
+  const LIMIT = 6;
+  let active = "all", expanded = false;
+  const usedCats = ["all", ...Object.keys(CAT).filter((k) => k !== "all" && projects.some((p) => p.category === k))];
+  filtersEl.innerHTML = usedCats.map((k) => `<button type="button" role="tab" data-cat="${k}" aria-selected="${k === active}">${CAT[k]}</button>`).join("");
+
+  function renderWorks() {
+    const list = projects.map((p, i) => [p, i]).filter(([p]) => active === "all" || p.category === active);
+    const shown = active === "all" && !expanded ? list.slice(0, LIMIT) : list;
+    worksEl.innerHTML = shown.map(([p, i]) => `
+      <button type="button" class="work" data-i="${i}" aria-label="Lihat detail ${esc(p.title)}">
+        ${thumb(p)}
+        <div class="work-meta"><div><h3>${esc(p.title)}</h3><small>${esc(CAT[p.category] || p.category)} · ${esc(p.year)}</small></div>
+        <span class="work-go"><svg><use href="#i-arrow"/></svg></span></div>
+      </button>`).join("");
+    moreBtn.hidden = !(active === "all" && !expanded && list.length > LIMIT);
+    document.dispatchEvent(new CustomEvent("works:render"));
+  }
+  renderWorks();
+  filtersEl.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-cat]"); if (!b) return;
+    active = b.dataset.cat;
+    $$("button", filtersEl).forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+    renderWorks();
+  });
+  moreBtn.addEventListener("click", () => { expanded = true; renderWorks(); });
+
+  /* ---------- Modal detail ---------- */
+  const modal = $("#modal"), modalBody = $("#modalBody");
+  const LABEL = { live: "Lihat Live", demo: "Coba Demo", repo: "Kode di GitHub" };
+  function openProject(i) {
+    const p = projects[i]; if (!p) return;
+    const links = Object.entries(p.links);
+    modalBody.innerHTML = `
+      <button type="button" class="modal-close" aria-label="Tutup"><svg><use href="#i-close"/></svg></button>
+      ${thumb(p)}
+      <div class="modal-content">
+        <p class="eyebrow">${esc(CAT[p.category] || p.category)} · ${esc(p.year)}</p>
+        <h3 id="modalTitle">${esc(p.title)}</h3>
+        <p class="meta">${esc(p.tagline)}</p>
+        <p class="desc">${esc(p.description)}</p>
+        <div class="chips">${(p.highlights || []).map((h) => `<span class="chip hl">${esc(h)}</span>`).join("")}${(p.tech || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div>
+        ${links.length ? `<div class="actions">${links.map(([k, u], n) => `<a class="btn ${n ? "btn-glass" : "btn-dark"}" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(LABEL[k] || k)} <svg><use href="#i-arrow"/></svg></a>`).join("")}</div>` : ""}
+      </div>`;
+    modal.showModal();
+    document.dispatchEvent(new CustomEvent("modal:open"));
+  }
+  worksEl.addEventListener("click", (e) => { const w = e.target.closest(".work"); if (w) openProject(+w.dataset.i); });
+  modal.addEventListener("click", (e) => { if (e.target === modal || e.target.closest(".modal-close")) modal.close(); });
+  modal.addEventListener("close", () => document.dispatchEvent(new CustomEvent("modal:close")));
+
+  /* ---------- Testimoni (hanya jika ada data asli) ---------- */
+  if (testimonials.length) {
+    $("#testimonials").innerHTML = testimonials.map((t) => `<figure class="card glass testi"><blockquote>“${esc(String(t.quote).slice(0, 400))}”</blockquote><figcaption><b>${esc(t.name)}</b><small>${esc(t.role || "")}</small></figcaption></figure>`).join("");
+    $("#testimoni").hidden = false;
   }
 
-  /* ---------- Slide proyek ---------- */
-  const labels = { live: "Lihat Live ↗", demo: "Coba Demo ↗", repo: "Kode di GitHub ↗" };
-  document.getElementById("slides").innerHTML = projects.map((p, i) => {
-    const pills = p.pills || [p.category];
-    const hl = p.highlights || [];
-    const links = Object.entries(p.links || {}).filter(([, u]) => u);
-    return `
-    <section class="slide${i % 2 ? " flip" : ""}" id="p-${i + 1}">
-      <div class="sky soft"></div>
-      <div class="clouds" aria-hidden="true"><span class="cloud c${(i % 5) + 1}"></span><span class="cloud c${((i + 2) % 5) + 1}"></span></div>
-      <canvas class="meadow" data-seed="${(i % 3) * 31 + 5}" data-layout="slide"></canvas>
-      <span class="slide-num">${pad(i + 1)}</span>
-      <div class="wrap slide-inner">
-        <div class="slide-text">
-          <div class="slide-logo" style="--c:${esc(p.accent)}">${icon(p.icon)}</div>
-          <h2>${esc(p.title)}</h2>
-          <div class="pills">${pills.map((t, k) => `<span class="pill ${k % 2 ? "blue" : "pink"}">${esc(t)}</span>`).join("")}</div>
-          <p class="desc">${esc(p.description)}</p>
-          ${hl.length > 2 ? `<ul class="hl">${hl.slice(2).map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
-          <p class="tech"><b>Tools:</b> ${(p.tech || []).map(esc).join(" · ")}</p>
-          ${links.length ? `<div class="actions">${links.map(([k, u], n) => `<a class="btn ${n ? "btn-glass" : "btn-blue"}" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${labels[k] || esc(k)}</a>`).join("")}</div>` : ""}
-        </div>
-        <div class="stage" data-cursor="Lihat">
-          <div class="tilt">${device(p)}</div>
-          ${hl[0] ? `<span class="badge-float b1">${esc(hl[0])}</span>` : ""}
-          ${hl[1] ? `<span class="badge-float b2">${esc(hl[1])}</span>` : ""}
-        </div>
-      </div>
-      <canvas class="front-grass" data-seed="${(i % 2) * 17 + 3}"></canvas>
-      <div class="butterflies" data-count="${2 + (i % 2)}"></div>
-    </section>`;
-  }).join("");
+  /* ---------- Kontak ---------- */
+  const cEmail = $("#cEmail"), cWa = $("#cWa"), cGit = $("#cGit");
+  if (SITE.email) { cEmail.href = "mailto:" + SITE.email; cEmail.textContent = SITE.email; } else cEmail.closest("li").hidden = true;
+  const waOk = /^\d{8,15}$/.test(SITE.whatsapp);
+  if (waOk) { cWa.href = "https://wa.me/" + SITE.whatsapp; cWa.textContent = "+" + SITE.whatsapp; } else cWa.closest("li").hidden = true;
+  if (SITE.github) cGit.href = SITE.github; else cGit.closest("li").hidden = true;
 
-  /* ---------- Gelembung ---------- */
-  document.querySelectorAll(".bubbles").forEach((el, k) => {
-    const r = rngFrom(400 + k);
-    let html = "";
-    for (let i = 0; i < 9; i++) {
-      const s = 12 + r() * 46;
-      html += `<span class="bubble" style="width:${s}px;height:${s}px;left:${(r() * 96).toFixed(1)}%;top:${(r() * 55).toFixed(1)}%;animation-delay:${(-r() * 9).toFixed(1)}s;animation-duration:${(7 + r() * 6).toFixed(1)}s"></span>`;
+  const form = $("#contactForm"), note = $("#formNote");
+  const defaultNote = note.textContent;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const via = (e.submitter && e.submitter.dataset.via) || "wa";
+    const f = Object.fromEntries(new FormData(form).entries());
+    const clean = (s, n) => String(s || "").replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "").trim().slice(0, n);
+    const name = clean(f.name, 80), email = clean(f.email, 120), type = clean(f.type, 40), msg = clean(f.message, 1500);
+    $$("input, textarea", form).forEach((el) => el.classList.remove("invalid"));
+    const bad = [];
+    if (name.length < 2) bad.push(form.elements.name);
+    if (!isEmail(email)) bad.push(form.elements.email);
+    if (msg.length < 10) bad.push(form.elements.message);
+    if (bad.length) {
+      bad.forEach((el) => el.classList.add("invalid"));
+      bad[0].focus();
+      note.textContent = "Mohon lengkapi nama, email yang valid, dan pesan (min. 10 karakter).";
+      note.classList.add("err");
+      return;
     }
-    el.innerHTML = html;
-  });
-
-  /* ---------- Kupu-kupu (sayap dianimasikan di GPU) ---------- */
-  const PALETTES = [["#ffc1d9", "#f06292"], ["#ffd6e6", "#ec6aa0"], ["#e3f1ff", "#7fb2ea"], ["#fff1c9", "#f2b84b"]];
-  let bfIndex = 0;
-  function butterfly(r) {
-    const [a, b] = PALETTES[Math.floor(r() * PALETTES.length)];
-    const id = `bf${bfIndex++}`;
-    const wing = (side) => `<span class="wing ${side}"><svg viewBox="0 0 20 34" aria-hidden="true">
-        <defs><linearGradient id="${id}${side}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
-        <g fill="url(#${id}${side})" stroke="rgba(255,255,255,.85)" stroke-width=".6"><path d="M19 15C14 3 3 0 2 6c-1 6 6 10 17 10z"/><path d="M19 17c-9 0-14 4-12 10 2 5 9 2 12-8z"/></g></svg></span>`;
-    return `${wing("wl")}${wing("wr")}<span class="bfly-body"></span>`;
-  }
-  document.querySelectorAll(".butterflies").forEach((el, k) => {
-    const r = rngFrom(900 + k * 13);
-    const n = +el.dataset.count || 3;
-    let html = "";
-    for (let i = 0; i < n; i++) {
-      const size = 26 + r() * 22;
-      const left = r() < .5 ? 3 + r() * 30 : 62 + r() * 33;
-      html += `<span class="bfly" style="width:${size.toFixed(0)}px;height:${(size * .85).toFixed(0)}px;left:${left.toFixed(1)}%;top:${(68 + r() * 22).toFixed(1)}%;animation-delay:${(-r() * 14).toFixed(1)}s;animation-duration:${(11 + r() * 8).toFixed(1)}s">${butterfly(r)}</span>`;
+    const text = `Halo ${SITE.nick}, saya ${name} (${email}).\nJenis proyek: ${type}\n\n${msg}`;
+    if (via === "wa") {
+      if (!waOk) { note.textContent = "Nomor WhatsApp belum diatur — silakan kirim via Email."; note.classList.add("err"); return; }
+      window.open("https://wa.me/" + SITE.whatsapp + "?text=" + encodeURIComponent(text), "_blank", "noopener,noreferrer");
+    } else {
+      if (!SITE.email) { note.textContent = "Email belum diatur — silakan kirim via WhatsApp."; note.classList.add("err"); return; }
+      location.href = "mailto:" + SITE.email + "?subject=" + encodeURIComponent("Proyek baru: " + type) + "&body=" + encodeURIComponent(text);
     }
-    el.innerHTML = html;
+    note.classList.remove("err");
+    note.textContent = "Terima kasih! Pesan Anda dibuka di " + (via === "wa" ? "WhatsApp" : "aplikasi email") + ".";
+    setTimeout(() => { note.textContent = defaultNote; }, 6000);
   });
 
-  /* ---------- Padang rumput: digambar di Web Worker (thread terpisah) ---------- */
-  const canvases = [...document.querySelectorAll("canvas.meadow, canvas.front-grass")];
-  const optsOf = (cv) => ({
-    W: Math.round(cv.clientWidth), H: Math.round(cv.clientHeight), dpr: Math.min(window.devicePixelRatio || 1, 1.5),
-    kind: cv.classList.contains("front-grass") ? "front" : "meadow", layout: cv.dataset.layout || "", seed: +cv.dataset.seed || 1,
-  });
-  // urutan: yang paling dekat layar lebih dulu
-  const ordered = () => canvases.slice().sort((a, b) => Math.abs(a.getBoundingClientRect().top) - Math.abs(b.getBoundingClientRect().top));
-  let drawAll;
-  if (window.Worker && "transferControlToOffscreen" in HTMLCanvasElement.prototype) {
-    const worker = new Worker("meadow.js");
-    canvases.forEach((cv, id) => {
-      cv.dataset.mid = id;
-      const off = cv.transferControlToOffscreen();
-      worker.postMessage({ type: "init", id, canvas: off }, [off]);
-    });
-    drawAll = () => ordered().forEach((cv) => { const o = optsOf(cv); if (o.W && o.H) worker.postMessage({ type: "draw", id: +cv.dataset.mid, ...o }); });
-    drawAll();
-  } else {
-    // cadangan: gambar di halaman, satu per satu saat browser santai
-    const s = document.createElement("script");
-    s.src = "meadow.js";
-    s.onload = () => {
-      const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
-      drawAll = () => { const q = ordered(); const step = () => { const cv = q.shift(); if (!cv) return; const o = optsOf(cv); if (o.W && o.H) window.Meadow.render(cv, o); idle(step); }; idle(step); };
-      drawAll();
-    };
-    document.head.appendChild(s);
-  }
-  let rt, lastW = innerWidth;
-  addEventListener("resize", () => {
-    if (innerWidth === lastW) return; // abaikan perubahan tinggi (address bar HP)
-    lastW = innerWidth; clearTimeout(rt);
-    rt = setTimeout(() => drawAll && drawAll(), 300);
-  });
+  /* ---------- Menu HP ---------- */
+  const menuBtn = $("#menuBtn"), navLinks = $("#navLinks");
+  const setMenu = (open) => { navLinks.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", String(open)); menuBtn.setAttribute("aria-label", open ? "Tutup menu" : "Buka menu"); };
+  menuBtn.addEventListener("click", () => setMenu(!navLinks.classList.contains("open")));
+  navLinks.addEventListener("click", (e) => { if (e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
 
-  /* ---------- Lapisan awan penyambung antar bagian ---------- */
-  const sections = [...document.querySelectorAll("main > section, #slides > section")];
-  sections.forEach((sec, i) => {
-    const r = rngFrom(300 + i * 7);
-    const makeSeam = (pos) => {
-      const s = document.createElement("div");
-      s.className = "seam seam-" + pos; s.setAttribute("aria-hidden", "true");
-      let html = "", x = -4;
-      while (x < 104) {
-        const w = 110 + r() * 170;
-        const off = -w * (.42 + r() * .2);
-        html += `<span class="puff" style="width:${w.toFixed(0)}px;height:${w.toFixed(0)}px;left:${x.toFixed(1)}%;${pos === "bottom" ? "bottom" : "top"}:${off.toFixed(0)}px;animation-delay:${(-r() * 12).toFixed(1)}s"></span>`;
-        x += 5 + r() * 7;
-      }
-      if (pos === "bottom") for (let k = 0; k < 3; k++)
-        html += `<span class="sparkle" style="left:${(10 + r() * 80).toFixed(1)}%;bottom:${(40 + r() * 70).toFixed(0)}px;animation-delay:${(-r() * 3).toFixed(1)}s"></span>`;
-      s.innerHTML = html;
-      sec.appendChild(s);
-    };
-    if (i > 0) makeSeam("top");
-    if (i < sections.length - 1) makeSeam("bottom");
-  });
-
-  // beri tahu motion.js bahwa konten dinamis sudah siap
-  document.dispatchEvent(new CustomEvent("content:ready"));
-
-  document.getElementById("year").textContent = new Date().getFullYear();
+  $("#year").textContent = new Date().getFullYear();
 })();

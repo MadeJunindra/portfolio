@@ -1,57 +1,44 @@
-# Portofolio — Made Junindra
+# Dejun — Portfolio (Light Glass UI)
 
-Website portofolio statis: judul chrome (liquid metal), langit, awan, dan padang rumput.
-HTML + CSS + JS murni, tanpa proses build. Siap deploy ke Vercel.
+Website portofolio statis bertema kaca (glassmorphism) terang. HTML + CSS + JS murni, tanpa build. Siap deploy ke Vercel.
+
+## Mengubah isi — cukup edit `projects.js`
+| Bagian | Yang diisi |
+| --- | --- |
+| `window.SITE` | nama, peran, intro, **email**, **WhatsApp**, lokasi, GitHub, foto, CV, tahun pengalaman |
+| `window.TESTIMONIALS` | testimoni **asli** dari klien (kosong = bagian disembunyikan) |
+| `window.PROJECTS` | daftar proyek |
+
+- **Foto profil**: simpan di `images/profile.webp` (rasio ±4:5), lalu isi `photo: "images/profile.webp"`. Kosong = monogram "DJ".
+- **CV**: simpan PDF di `files/cv-dejun.pdf`, isi `cv: "files/cv-dejun.pdf"` → tombol "Unduh CV" muncul.
+- **Tahun pengalaman**: isi `yearsExperience: "3+"` → muncul di statistik & kartu hero.
+- Screenshot proyek: `images/nama.webp`, isi `image` pada proyek.
 
 ## Struktur
 | File | Isi |
 | --- | --- |
-| `index.html` | Kerangka halaman |
-| `style.css` | Semua tampilan |
-| `projects.js` | **Data proyek** — edit di sini |
-| `main.js` | Membuat slide proyek, kupu-kupu, awan penyambung, mengatur rumput |
-| `meadow.js` | Menggambar rumput (dijalankan di Web Worker) |
-| `motion.js` | Animasi: Lenis smooth scroll, GSAP + ScrollTrigger, kursor, tombol magnetik, tilt 3D |
-| `fonts/` | Font lokal (DM Sans, Poppins, Great Vibes) |
-| `vendor/` | GSAP 3.12.5, ScrollTrigger, Lenis 1.1.20 (disimpan lokal) |
+| `index.html` | Struktur halaman |
+| `style.css` | Tampilan (glass, layout, responsif) |
+| `projects.js` | **Semua data** |
+| `main.js` | Mengisi halaman dari data, filter karya, modal, form kontak, menu HP |
+| `motion.js` | Animasi: Lenis smooth scroll + GSAP + ScrollTrigger |
+| `vendor/` | GSAP 3.12.5, ScrollTrigger, Lenis 1.1.20 (lokal) |
+| `fonts/` | Plus Jakarta Sans (lokal) |
 | `vercel.json` | Header keamanan & cache |
 
-## Mengubah isi
-- **Proyek**: edit `projects.js`. `links` hanya menerima URL `https://`. `image` hanya dari folder `images/`. `accent` harus warna hex (mis. `#2f7d5b`).
-- **Kontak**: di `index.html` bagian `#kontak`, ganti nomor WhatsApp dan email.
+## Form kontak
+Tidak ada server/database: form membuka **WhatsApp** atau **aplikasi email** pengunjung dengan pesan yang sudah terisi. Tidak ada data yang disimpan → tidak ada data yang bisa dicuri. Input divalidasi & dibatasi panjangnya.
 
-## Animasi
-- Loader pembuka → intro judul memantul (elastic)
-- Smooth scroll (Lenis) yang tersinkron dengan ScrollTrigger
-- Parallax: judul, awan, rumput, mockup, nomor slide
-- Teks judul muncul per huruf, kartu & pill "pop"
-- Pita teks berjalan yang kecepatannya ikut kecepatan scroll
-- Kursor kustom, tombol magnetik, tilt 3D di mockup, percikan kilau saat klik
-- Nav sembunyi saat scroll turun, muncul saat naik; indikator bagian aktif
-- Progress bar & tombol "kembali ke atas" dengan cincin progres
-- Menghormati pengaturan **"Kurangi gerakan"** (prefers-reduced-motion): animasi dimatikan otomatis
-
-## Performa (target: mengikuti refresh rate layar, 60/120/144 Hz)
-- **Judul chrome = gambar WebP** yang sudah dirender (`images/title/`). Efek logamnya berat, jadi dihitung sekali saat build, bukan di browser pengunjung.
-- **Rumput digambar di Web Worker** (`meadow.js`, OffscreenCanvas) = thread terpisah, tidak mengganggu animasi/scroll. Browser lama otomatis pakai cara cadangan.
-- **Semua animasi hanya `transform`/`opacity`** → dikerjakan GPU (kursor, kupu-kupu, loader, awan, dekorasi).
-- Tanpa `backdrop-filter` & `filter: blur` di elemen yang bergerak.
-- Setup animasi dipecah kecil-kecil selama loader; posisi ScrollTrigger dihitung saat loader masih menutup layar.
-- Font & gambar lokal + preload; screenshot WebP (46 KB, sebelumnya 500 KB).
-- Animasi di bagian yang tidak terlihat dijeda otomatis.
-
-Mengubah tulisan judul: render ulang gambar di `images/title/` (lihat riwayat proyek), lalu ganti file WebP-nya.
+## Performa
+- Kaca dibuat dengan gradien + border + bayangan (tanpa `backdrop-filter` mahal).
+- Animasi hanya `transform`/`opacity` (GPU) → mengikuti refresh rate layar (60/120/144 Hz).
+- Font & library lokal, gambar WebP, animasi berhenti saat tidak terlihat.
+- Menghormati "Kurangi gerakan" (prefers-reduced-motion).
 
 ## Keamanan
-- **Content-Security-Policy ketat**: hanya script dari domain sendiri (`script-src 'self'`), tanpa inline script, tanpa `eval`. Script sisipan (XSS) dari luar tidak akan dijalankan.
-- **Library disimpan lokal**, bukan dari CDN → tidak terpengaruh jika CDN pihak ketiga diretas.
-- **Anti-clickjacking**: `frame-ancestors 'none'` + `X-Frame-Options: DENY` (situs tidak bisa disisipkan di iframe orang lain).
-- **HSTS**: browser dipaksa selalu memakai HTTPS.
-- `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (kamera, mikrofon, lokasi, dll. dimatikan), `Cross-Origin-Opener-Policy`.
-- **Sanitasi data**: semua teks di-escape sebelum masuk HTML; URL divalidasi hanya `https://`; link luar memakai `rel="noopener noreferrer"`.
-- Tidak ada form, database, login, atau API key → tidak ada data yang bisa dicuri dari situs ini.
+- CSP ketat: `script-src 'self'`, tanpa inline script, tanpa eval, `font-src 'self'`, `worker-src 'none'`, `form-action 'none'`, `frame-ancestors 'none'`.
+- HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, COOP/CORP.
+- Semua data di-escape; URL hanya `https://`; gambar hanya dari `images/`; link luar `rel="noopener noreferrer"`.
 
-Cek header setelah online: https://securityheaders.com (masukkan URL Vercel Anda).
-
-## Deploy ke Vercel
-Upload semua isi folder ini ke repo GitHub, lalu Import di Vercel (Framework Preset: **Other**). Setiap push otomatis ter-deploy.
+## Deploy
+Upload semua isi folder ini ke repo GitHub yang terhubung ke Vercel (timpa semua file lama). Vercel deploy otomatis.
