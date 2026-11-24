@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, tes & verifikasi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Semua file yang dirujuk ada
+        run: npm run verify
+
+      - name: Lint (JS, CSS, HTML)
+        run: npm run lint
+
+      - name: Format kode
+        run: npm run format:check
+
+      - name: Tes unit
+        run: npm run test:unit
+
+      - name: Pasang browser Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tes end-to-end (desktop & HP, termasuk aksesibilitas)
+        run: npm run test:e2e
+
+      - name: Audit keamanan dependensi
+        run: npm audit --audit-level=moderate

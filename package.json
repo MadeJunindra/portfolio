@@ -1,0 +1,35 @@
+{
+  "name": "dejun-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portofolio Dejun (Made Junindra) — situs statis, tanpa build, siap Vercel.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs 4321",
+    "verify": "node scripts/verify-public.mjs",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:html",
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"public/assets/css/**/*.css\"",
+    "lint:html": "html-validate \"public/**/*.html\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/*.test.js\"",
+    "test:e2e": "playwright test",
+    "check": "npm run verify && npm run lint && npm run format:check && npm test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.63.0",
+    "eslint": "9.39.5",
+    "globals": "15.15.0",
+    "html-validate": "11.21.1",
+    "prettier": "3.10.1",
+    "stylelint": "16.26.1",
+    "stylelint-config-standard": "36.0.1"
+  }
+}
