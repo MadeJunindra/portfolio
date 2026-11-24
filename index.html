@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dejun — Portofolio</title>
+  <title>Made Junindra — Portofolio</title>
   <meta name="description" content="Portofolio Made Junindra: web app, PWA, website bisnis, dan aplikasi AI.">
   <meta property="og:title" content="Made Junindra — Portofolio">
   <meta property="og:description" content="Web App · PWA · Website · AI">
   <meta property="og:image" content="/images/og.png">
   <meta name="theme-color" content="#8fc3f0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +17,24 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="skip-link" href="#isi">Lewati ke konten</a>
+
+  <!-- Loader pembuka -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <span class="loader-mark">MJ</span>
+      <span class="loader-count"><span id="loaderNum">0</span>%</span>
+      <span class="loader-bar"><i id="loaderBar"></i></span>
+    </div>
+  </div>
+
+  <!-- Progres scroll, kursor, kembali ke atas -->
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"><b class="cursor-label"></b></span></div>
+  <a href="#top" class="to-top" id="toTop" aria-label="Kembali ke atas">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" id="topRing" cx="24" cy="24" r="21"/><path d="M24 31V17m-6 6 6-6 6 6"/></svg>
+  </a>
+
   <!-- Navigasi kaca melayang -->
   <header class="nav">
     <a href="#top" class="nav-brand">MJ</a>
@@ -38,7 +57,7 @@
       <div class="bubbles" aria-hidden="true"></div>
 
       <div class="hero-title">
-        <h1 class="sr-only">Portofolio Dejun</h1>
+        <h1 class="sr-only">Portofolio Made Junindra</h1>
         <svg id="chromeTitle" aria-hidden="true"></svg>
         <p class="hero-sub">Karya pilihan · Web App · PWA · Website · AI</p>
       </div>
@@ -46,7 +65,7 @@
       <canvas class="meadow" data-seed="7" data-layout="cover"></canvas>
 
       <div class="cover-foot wrap">
-        <p>Dejun&nbsp;|&nbsp;Web &amp; App Developer<br>Selected Works&nbsp;|&nbsp;2024 – 2026</p>
+        <p>Made Junindra&nbsp;|&nbsp;Web &amp; App Developer<br>Selected Works&nbsp;|&nbsp;2024 – 2026</p>
         <p class="r">Web App&nbsp;|&nbsp;Progressive Web App<br>Website&nbsp;|&nbsp;AI Assistant</p>
       </div>
       <a href="#isi" class="scroll-cue" aria-label="Gulir ke daftar proyek"><span></span></a>
@@ -56,10 +75,13 @@
     <section class="toc" id="isi">
       <div class="sky soft"></div>
       <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
-      <div class="wrap toc-inner reveal">
+      <div class="wrap toc-inner">
         <p class="kicker">Daftar Isi</p>
         <h2 class="section-title"><span class="script">Selected</span> Projects</h2>
         <ol class="toc-list" id="tocList"></ol>
+      </div>
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track" id="marquee"></div>
       </div>
     </section>
 
@@ -72,10 +94,10 @@
       <div class="clouds" aria-hidden="true"><span class="cloud c1"></span><span class="cloud c3"></span><span class="cloud c5"></span></div>
       <div class="bubbles" aria-hidden="true"></div>
       <div class="wrap about-inner">
-        <div class="glass-card reveal">
+        <div class="glass-card about-card">
           <span class="sparkle s1"></span>
           <p class="kicker">Tentang Saya</p>
-          <h2 class="section-title"><span class="script">Hello,</span> I'm Dejun</h2>
+          <h2 class="section-title"><span class="script">Hello,</span> I'm Made</h2>
           <p>
             Saya developer yang senang mengubah kebutuhan sehari-hari menjadi aplikasi: catatan usaha fotokopi,
             keuangan pribadi, rental kamera, sampai alat bantu trading. Setiap proyek dimulai dari satu pertanyaan
@@ -86,7 +108,7 @@
             sinkronisasi ke Google Sheets, integrasi API & AI, dan website bisnis dengan Laravel.
           </p>
         </div>
-        <div class="skill-stack reveal">
+        <div class="skill-stack">
           <div class="glass-card skill"><span class="pill pink">Frontend</span><p>HTML · CSS · JavaScript · PWA · Responsive UI</p></div>
           <div class="glass-card skill"><span class="pill blue">Backend</span><p>Node.js · Laravel / PHP · REST API · Apps Script</p></div>
           <div class="glass-card skill"><span class="pill pink">AI & Cloud</span><p>LLM · Microsoft 365 · SharePoint · Vercel · GitHub Actions</p></div>
@@ -98,27 +120,32 @@
     <section class="contact" id="kontak">
       <div class="sky soft"></div>
       <div class="clouds" aria-hidden="true"><span class="cloud c2"></span><span class="cloud c4"></span></div>
-      <div class="wrap contact-inner reveal">
+      <div class="wrap contact-inner">
         <p class="kicker">Kontak</p>
         <h2 class="section-title"><span class="script">Let's</span> Work Together</h2>
         <p class="lead">Punya ide aplikasi atau website? Ceritakan kebutuhan Anda, saya bantu dari konsep sampai online.</p>
         <div class="contact-links">
           <!-- Ganti dengan kontak Anda -->
-          <a class="btn btn-blue" href="https://wa.me/623119873643" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn-glass" href="mailto:dekjun84@gmail.com">Email</a>
-          <a class="btn btn-glass" href="https://github.com/MadeJunindra" target="_blank" rel="noopener">GitHub</a>
+          <a class="btn btn-blue" href="https://wa.me/62XXXXXXXXXX" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="btn btn-glass" href="mailto:email@anda.com">Email</a>
+          <a class="btn btn-glass" href="https://github.com/MadeJunindra" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
       <canvas class="meadow" data-seed="99" data-layout="footer"></canvas>
       <div class="butterflies" data-count="3"></div>
       <footer class="footer wrap">
-        <span>© <span id="year"></span> Dejun</span>
+        <span>© <span id="year"></span> Made Junindra</span>
         <span class="script-sm">Thank you</span>
       </footer>
     </section>
   </main>
 
-  <script src="projects.js"></script>
-  <script src="main.js"></script>
+  <!-- Library disimpan lokal (bukan CDN) agar aman dari perubahan pihak ketiga -->
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="vendor/ScrollTrigger.min.js" defer></script>
+  <script src="vendor/lenis.min.js" defer></script>
+  <script src="projects.js" defer></script>
+  <script src="main.js" defer></script>
+  <script src="motion.js" defer></script>
 </body>
 </html>

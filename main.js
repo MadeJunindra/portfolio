@@ -1,5 +1,18 @@
 (function () {
-  const projects = window.PROJECTS || [];
+  /* ---------- Sanitasi data (keamanan) ----------
+     Semua isi projects.js divalidasi sebelum masuk ke HTML:
+     - URL hanya boleh https:// (menolak javascript:, data:, dll.)
+     - warna hanya format hex, gambar hanya dari folder images/
+     - teks selalu di-escape */
+  const safeUrl = (u) => { try { const x = new URL(String(u)); return x.protocol === "https:" ? x.href : ""; } catch (e) { return ""; } };
+  const safeColor = (c) => (/^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : "#3355d1");
+  const safeImg = (s) => (/^images\/[\w.-]+\.(png|jpe?g|webp|avif|svg)$/i.test(String(s)) ? s : "");
+  const projects = (Array.isArray(window.PROJECTS) ? window.PROJECTS : []).map((p) => ({
+    ...p,
+    accent: safeColor(p.accent),
+    image: safeImg(p.image),
+    links: Object.fromEntries(Object.entries(p.links || {}).map(([k, u]) => [k, safeUrl(u)]).filter(([, u]) => u)),
+  }));
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pad = (n) => String(n).padStart(2, "0");
   const rngFrom = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -107,6 +120,7 @@
         x += w + GAP;
       });
     });
+    document.dispatchEvent(new CustomEvent("title:ready"));
   }
   buildTitle();
 
@@ -144,25 +158,25 @@
     <section class="slide${i % 2 ? " flip" : ""}" id="p-${i + 1}">
       <div class="sky soft"></div>
       <div class="clouds" aria-hidden="true"><span class="cloud c${(i % 5) + 1}"></span><span class="cloud c${((i + 2) % 5) + 1}"></span></div>
-      <canvas class="meadow" data-seed="${i * 31 + 5}" data-layout="slide"></canvas>
+      <canvas class="meadow" data-seed="${(i % 3) * 31 + 5}" data-layout="slide"></canvas>
       <span class="slide-num">${pad(i + 1)}</span>
       <div class="wrap slide-inner">
-        <div class="slide-text reveal">
+        <div class="slide-text">
           <div class="slide-logo" style="--c:${esc(p.accent)}">${icon(p.icon)}</div>
           <h2>${esc(p.title)}</h2>
           <div class="pills">${pills.map((t, k) => `<span class="pill ${k % 2 ? "blue" : "pink"}">${esc(t)}</span>`).join("")}</div>
           <p class="desc">${esc(p.description)}</p>
           ${hl.length > 2 ? `<ul class="hl">${hl.slice(2).map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : ""}
           <p class="tech"><b>Tools:</b> ${(p.tech || []).map(esc).join(" · ")}</p>
-          ${links.length ? `<div class="actions">${links.map(([k, u], n) => `<a class="btn ${n ? "btn-glass" : "btn-blue"}" href="${esc(u)}" target="_blank" rel="noopener">${labels[k] || esc(k)}</a>`).join("")}</div>` : ""}
+          ${links.length ? `<div class="actions">${links.map(([k, u], n) => `<a class="btn ${n ? "btn-glass" : "btn-blue"}" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${labels[k] || esc(k)}</a>`).join("")}</div>` : ""}
         </div>
-        <div class="stage reveal">
-          ${device(p)}
+        <div class="stage" data-cursor="Lihat">
+          <div class="tilt">${device(p)}</div>
           ${hl[0] ? `<span class="badge-float b1">${esc(hl[0])}</span>` : ""}
           ${hl[1] ? `<span class="badge-float b2">${esc(hl[1])}</span>` : ""}
         </div>
       </div>
-      <canvas class="front-grass" data-seed="${i * 17 + 3}"></canvas>
+      <canvas class="front-grass" data-seed="${(i % 2) * 17 + 3}"></canvas>
       <div class="butterflies" data-count="${2 + (i % 2)}"></div>
     </section>`;
   }).join("");
@@ -249,7 +263,7 @@
   function drawMeadow(cv) {
     const W = cv.clientWidth, H = cv.clientHeight;
     if (!W || !H) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     const ctx = cv.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineCap = "round";
@@ -320,7 +334,7 @@
   function drawFrontGrass(cv) {
     const W = cv.clientWidth, H = cv.clientHeight;
     if (!W || !H) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     const ctx = cv.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineCap = "round";
@@ -337,19 +351,50 @@
     strokeBlades(ctx, blades);
   }
 
-  const paint = (cv) => (cv.classList.contains("front-grass") ? drawFrontGrass(cv) : drawMeadow(cv));
+  // Rumput digambar SEKALI per varian, lalu disalin (drawImage) ke canvas lain yang sama -> sangat cepat
+  const cache = new Map();
+  const keyOf = (cv) => `${cv.className}|${cv.dataset.layout || ""}|${cv.dataset.seed}|${cv.clientWidth}x${cv.clientHeight}`;
+  function paint(cv) {
+    const key = keyOf(cv);
+    if (!cv.clientWidth || !cv.clientHeight) return;
+    const src = cache.get(key);
+    if (src && src !== cv) {
+      cv.width = src.width; cv.height = src.height;
+      cv.getContext("2d").drawImage(src, 0, 0);
+    } else {
+      (cv.classList.contains("front-grass") ? drawFrontGrass : drawMeadow)(cv);
+      cache.set(key, cv);
+    }
+    cv.dataset.drawn = key;
+  }
   const canvases = [...document.querySelectorAll("canvas.meadow, canvas.front-grass")];
+
+  // yang terlihat di layar pertama digambar langsung
+  canvases.filter((c) => c.getBoundingClientRect().top < innerHeight * 1.5).forEach(paint);
+  // sisanya digambar satu per satu saat browser sedang santai (bukan saat scroll)
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(() => fn({ timeRemaining: () => 8 }), 60));
+  const queue = canvases.filter((c) => !c.dataset.drawn);
+  const pump = (deadline) => {
+    while (queue.length && deadline.timeRemaining() > 4) {
+      const c = queue.shift();
+      if (!c.dataset.drawn) paint(c);
+      if (!cache.has(keyOf(c))) break; // gambar baru yang berat: lanjut di jeda berikutnya
+    }
+    if (queue.length) idle(pump, { timeout: 500 });
+  };
+  addEventListener("load", () => idle(pump, { timeout: 500 }), { once: true });
+  // jaga-jaga: kalau pengguna scroll lebih cepat dari antrian
   const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => { if (e.isIntersecting) { paint(e.target); e.target.dataset.drawn = e.target.clientWidth; io.unobserve(e.target); } });
-  }, { rootMargin: "400px 0px" });
+    entries.forEach((e) => { if (e.isIntersecting && !e.target.dataset.drawn) paint(e.target); });
+  }, { rootMargin: "600px 0px" });
   canvases.forEach((c) => io.observe(c));
 
-  let rt;
+  let rt, lastW = innerWidth;
   addEventListener("resize", () => {
+    if (innerWidth === lastW) return; // abaikan perubahan tinggi (address bar HP)
+    lastW = innerWidth;
     clearTimeout(rt);
-    rt = setTimeout(() => canvases.forEach((c) => {
-      if (c.dataset.drawn && +c.dataset.drawn !== c.clientWidth) { paint(c); c.dataset.drawn = c.clientWidth; }
-    }), 250);
+    rt = setTimeout(() => { cache.clear(); canvases.forEach((c) => { delete c.dataset.drawn; }); canvases.forEach(paint); }, 300);
   });
 
   /* ---------- Lapisan awan penyambung antar bagian ---------- */
@@ -375,11 +420,8 @@
     if (i < sections.length - 1) makeSeam("bottom");
   });
 
-  /* ---------- Reveal saat scroll ---------- */
-  const rev = new IntersectionObserver((entries) => {
-    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rev.unobserve(e.target); } });
-  }, { threshold: .15 });
-  document.querySelectorAll(".reveal").forEach((el) => (reduceMotion ? el.classList.add("in") : rev.observe(el)));
+  // beri tahu motion.js bahwa konten dinamis sudah siap
+  document.dispatchEvent(new CustomEvent("content:ready"));
 
   document.getElementById("year").textContent = new Date().getFullYear();
 })();
