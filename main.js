@@ -32,98 +32,6 @@
   };
   const icon = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.globe}</svg>`;
 
-  /* ---------- Judul chrome (liquid metal) ---------- */
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
-
-  // Filter chrome: bentuk digoyang (liquid) -> peta tinggi -> cahaya dipetakan berpita (pantulan logam) -> kilap
-  function chromeFilter(defs, id, tint, wobble, blur) {
-    const f = el("filter", { id, x: "-60%", y: "-60%", width: "220%", height: "220%", "color-interpolation-filters": "sRGB" }, defs);
-    el("feTurbulence", { type: "fractalNoise", baseFrequency: "0.0065", numOctaves: "1", seed: "4", result: "noise" }, f);
-    el("feDisplacementMap", { in: "SourceGraphic", in2: "noise", scale: wobble, xChannelSelector: "R", yChannelSelector: "G", result: "shape" }, f);
-    el("feGaussianBlur", { in: "shape", stdDeviation: blur, result: "h" }, f);
-    const d = el("feDiffuseLighting", { in: "h", surfaceScale: "16", diffuseConstant: "1.15", "lighting-color": "#fff", result: "diff" }, f);
-    el("feDistantLight", { azimuth: "225", elevation: "30" }, d);
-    el("feGaussianBlur", { in: "diff", stdDeviation: "1.6", result: "diffS" }, f);
-    const ct = el("feComponentTransfer", { in: "diffS", result: "metal" }, f);
-    const tv = "0.14 0.42 0.88 1 0.5 0.26 0.62 0.95 1";
-    ["feFuncR", "feFuncG", "feFuncB"].forEach((fn) => el(fn, { type: "table", tableValues: tv }, ct));
-    el("feFlood", { "flood-color": tint, result: "tint" }, f);
-    el("feComposite", { in: "metal", in2: "tint", operator: "arithmetic", k1: "1", k2: "0", k3: "0", k4: "0", result: "tinted" }, f);
-    const s = el("feSpecularLighting", { in: "h", surfaceScale: "16", specularConstant: "1.5", specularExponent: "45", "lighting-color": "#fff", result: "spec" }, f);
-    el("feDistantLight", { azimuth: "235", elevation: "48" }, s);
-    el("feComposite", { in: "tinted", in2: "spec", operator: "arithmetic", k1: "0", k2: "1", k3: "1", k4: "0", result: "lit" }, f);
-    el("feComposite", { in: "lit", in2: "shape", operator: "in", result: "clip" }, f);
-    el("feDropShadow", { in: "clip", dx: "0", dy: "10", stdDeviation: "12", "flood-color": "#3a2a7a", "flood-opacity": ".25" }, f);
-  }
-
-  const HEART = "M0 34 C-14 22 -58 2 -50 -28 C-44 -50 -14 -50 0 -26 C14 -50 44 -50 50 -28 C58 2 14 22 0 34Z";
-  const STAR = "M0 -56 C4 -14 14 -4 56 0 C14 4 4 14 0 56 C-4 14 -14 4 -56 0 C-14 -4 -4 -14 0 -56Z";
-
-  async function buildTitle() {
-    const svg = document.getElementById("chromeTitle");
-    if (!svg) return;
-    try { await document.fonts.load('500 220px "Gluten"'); } catch (e) {}
-    svg.innerHTML = "";
-    const FS = 230, STROKE = 4, GAP = -14, LINE_H = FS * .78, SIDE = 120, TOP = 60;
-    const lines = ["Porto", "folio"];
-    const defs = el("defs", {}, svg);
-    chromeFilter(defs, "chrome", "#e4e8f6", 18, 10);
-    chromeFilter(defs, "chromePink", "#ff5fa8", 6, 6);
-    chromeFilter(defs, "chromeLilac", "#c39bff", 4, 5);
-    // bola chrome kecil (gradien, tanpa filter)
-    [["chromePink", "#ffd1e6", "#e0408a", "#5e0d36"], ["chromeLilac", "#efe2ff", "#9a6cf0", "#33186e"]].forEach(([id, a, b, c]) => {
-      const g = el("radialGradient", { id: "sph-" + id, cx: ".35", cy: ".3", r: ".75" }, defs);
-      el("stop", { offset: "0", "stop-color": "#fff" }, g);
-      el("stop", { offset: ".18", "stop-color": a }, g);
-      el("stop", { offset: ".6", "stop-color": b }, g);
-      el("stop", { offset: "1", "stop-color": c }, g);
-    });
-
-    const probe = el("text", { "font-family": "Gluten", "font-weight": "500", "font-size": FS }, svg);
-    const widthOf = (ch) => { probe.textContent = ch; return probe.getComputedTextLength(); };
-    const rows = lines.map((line) => { const ws = [...line].map(widthOf); return { line, ws, total: ws.reduce((a, b) => a + b, 0) + GAP * (ws.length - 1) }; });
-    probe.remove();
-    const inner = Math.max(...rows.map((r) => r.total)) + STROKE * 2;
-    const W = inner + SIDE * 2, H = TOP + FS * .78 + LINE_H + 70;
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-
-    // dekorasi di belakang
-    const deco = (shape, x, y, sc, filter, cls, delay) => {
-      const g = el("g", { class: cls, style: `animation-delay:${delay}s` }, svg);
-      if (shape === "dot") el("circle", { cx: x, cy: y, r: 40 * sc, fill: `url(#sph-${filter})` }, g);
-      else el("path", { d: shape, transform: `translate(${x} ${y}) scale(${sc})`, fill: "#fff", filter: `url(#${filter})` }, g);
-    };
-    deco(HEART, SIDE * .45, H * .42, 1, "chromePink", "deco-float", 0);
-    deco(HEART, W - SIDE * .5, H * .78, .85, "chromePink", "deco-float", -2);
-    deco(STAR, W - SIDE * .55, H * .18, .9, "chromePink", "deco-twinkle", -1);
-    deco(STAR, SIDE * .7, H * .82, .55, "chromeLilac", "deco-twinkle", -2.5);
-    deco("dot", W * .55, TOP * .45, .35, "chromePink", "deco-float", -1.5);
-    deco("dot", SIDE * .55, TOP * .9, .28, "chromeLilac", "deco-float", -3);
-    deco("dot", W - SIDE * .25, H * .5, .3, "chromeLilac", "deco-float", -.5);
-
-    // huruf: satu grup, satu filter -> huruf yang bersentuhan menyatu seperti cairan
-    const word = el("g", { filter: "url(#chrome)" }, svg);
-    const r = rngFrom(11);
-    rows.forEach((row, li) => {
-      let x = (W - row.total) / 2 + (li ? FS * .12 : -FS * .08);
-      const base = TOP + FS * .78 + li * LINE_H;
-      [...row.line].forEach((ch, k) => {
-        const w = row.ws[k];
-        const rot = ((r() - .5) * 14).toFixed(1), dy = ((r() - .5) * 26).toFixed(1);
-        const t = el("text", {
-          x, y: base + +dy, "font-family": "Gluten", "font-weight": "500", "font-size": FS,
-          fill: "#fff", stroke: "#fff", "stroke-width": STROKE, "stroke-linejoin": "round",
-          transform: `rotate(${rot} ${x + w / 2} ${base - FS * .35})`,
-        }, word);
-        t.textContent = ch;
-        x += w + GAP;
-      });
-    });
-    document.dispatchEvent(new CustomEvent("title:ready"));
-  }
-  buildTitle();
-
   /* ---------- Daftar isi ---------- */
   document.getElementById("tocList").innerHTML = projects.map((p, i) => `
     <li><a href="#p-${i + 1}">
@@ -134,7 +42,7 @@
 
   /* ---------- Mockup ---------- */
   function screen(p, kind) {
-    if (p.image) return `<img src="${esc(p.image)}" alt="Tampilan ${esc(p.title)}" loading="lazy">`;
+    if (p.image) return `<img src="${esc(p.image)}" alt="Tampilan ${esc(p.title)}" loading="lazy" decoding="async" width="780" height="1560">`;
     const host = (p.links && p.links.live) ? p.links.live.replace(/^https?:\/\//, "") : p.title.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".app";
     const bar = kind === "laptop" ? `<div class="mock-bar"><i></i><i></i><i></i><span>${esc(host)}</span></div>` : "";
     const tab = kind === "phone" ? `<div class="mock-tab"><i></i><i></i><i></i><i></i></div>` : "";
@@ -192,21 +100,17 @@
     el.innerHTML = html;
   });
 
-  /* ---------- Kupu-kupu ---------- */
+  /* ---------- Kupu-kupu (sayap dianimasikan di GPU) ---------- */
   const PALETTES = [["#ffc1d9", "#f06292"], ["#ffd6e6", "#ec6aa0"], ["#e3f1ff", "#7fb2ea"], ["#fff1c9", "#f2b84b"]];
-  function butterfly(idx, r) {
-    const [a, b] = PALETTES[Math.floor(r() * PALETTES.length)];
-    const id = `bf${idx}`;
-    return `<svg viewBox="0 0 40 34" aria-hidden="true">
-      <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
-      <g class="wl" fill="url(#${id})" stroke="rgba(255,255,255,.8)" stroke-width=".6">
-        <path d="M19 15C14 3 3 0 2 6c-1 6 6 10 17 10z"/><path d="M19 17c-9 0-14 4-12 10 2 5 9 2 12-8z"/></g>
-      <g class="wr" fill="url(#${id})" stroke="rgba(255,255,255,.8)" stroke-width=".6">
-        <path d="M21 15C26 3 37 0 38 6c1 6-6 10-17 10z"/><path d="M21 17c9 0 14 4 12 10-2 5-9 2-12-8z"/></g>
-      <rect x="19.2" y="9" width="1.6" height="17" rx=".8" fill="#5a3a4a"/>
-      <path d="M20 9c-1-3-3-5-5-6M20 9c1-3 3-5 5-6" stroke="#5a3a4a" stroke-width=".7" fill="none"/></svg>`;
-  }
   let bfIndex = 0;
+  function butterfly(r) {
+    const [a, b] = PALETTES[Math.floor(r() * PALETTES.length)];
+    const id = `bf${bfIndex++}`;
+    const wing = (side) => `<span class="wing ${side}"><svg viewBox="0 0 20 34" aria-hidden="true">
+        <defs><linearGradient id="${id}${side}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
+        <g fill="url(#${id}${side})" stroke="rgba(255,255,255,.85)" stroke-width=".6"><path d="M19 15C14 3 3 0 2 6c-1 6 6 10 17 10z"/><path d="M19 17c-9 0-14 4-12 10 2 5 9 2 12-8z"/></g></svg></span>`;
+    return `${wing("wl")}${wing("wr")}<span class="bfly-body"></span>`;
+  }
   document.querySelectorAll(".butterflies").forEach((el, k) => {
     const r = rngFrom(900 + k * 13);
     const n = +el.dataset.count || 3;
@@ -214,187 +118,45 @@
     for (let i = 0; i < n; i++) {
       const size = 26 + r() * 22;
       const left = r() < .5 ? 3 + r() * 30 : 62 + r() * 33;
-      html += `<span class="bfly" style="width:${size}px;height:${size * .85}px;left:${left.toFixed(1)}%;top:${(68 + r() * 22).toFixed(1)}%;animation-delay:${(-r() * 14).toFixed(1)}s;animation-duration:${(11 + r() * 8).toFixed(1)}s">${butterfly(bfIndex++, r)}</span>`;
+      html += `<span class="bfly" style="width:${size.toFixed(0)}px;height:${(size * .85).toFixed(0)}px;left:${left.toFixed(1)}%;top:${(68 + r() * 22).toFixed(1)}%;animation-delay:${(-r() * 14).toFixed(1)}s;animation-duration:${(11 + r() * 8).toFixed(1)}s">${butterfly(r)}</span>`;
     }
     el.innerHTML = html;
   });
 
-  /* ---------- Padang rumput (canvas) ---------- */
-  const LAYOUTS = {
-    cover: [
-      { cx: .1, w: .3, h: .78 }, { cx: .52, w: .36, h: .98 }, { cx: .9, w: .3, h: .74 },
-      { cx: .3, w: .32, h: .6 }, { cx: .74, w: .34, h: .58 }, { cx: .5, w: .75, h: .3 },
-    ],
-    footer: [
-      { cx: .2, w: .4, h: .85 }, { cx: .78, w: .38, h: .95 }, { cx: .5, w: .35, h: .6 }, { cx: .5, w: .9, h: .28 },
-    ],
-  };
-  function slideLayout(r) {
-    const hills = [];
-    const n = 3 + Math.floor(r() * 2);
-    for (let i = 0; i < n; i++) hills.push({ cx: (i + .5) / n + (r() - .5) * .12, w: .28 + r() * .14, h: .62 + r() * .32 });
-    hills.push({ cx: .2 + r() * .6, w: .45 + r() * .2, h: .4 + r() * .1 });
-    hills.push({ cx: .5, w: .85, h: .22 });
-    return hills;
-  }
-
-  const SHADES = 28;
-  const shade = (i, hue) => `hsl(${hue} ${58 + (i / SHADES) * 12}% ${18 + (i / SHADES) * 52}%)`;
-  const HUES = [88, 100, 112];
-
-  function strokeBlades(ctx, blades) {
-    // blades diurutkan dari belakang ke depan, dikelompokkan per warna dalam potongan kecil supaya cepat
-    const CHUNK = 500;
-    for (let s = 0; s < blades.length; s += CHUNK) {
-      const groups = new Map();
-      for (let j = s; j < Math.min(s + CHUNK, blades.length); j++) {
-        const b = blades[j]; const key = b.c + "|" + b.w;
-        (groups.get(key) || groups.set(key, []).get(key)).push(b);
-      }
-      for (const [key, list] of groups) {
-        const [c, w] = key.split("|");
-        ctx.strokeStyle = c; ctx.lineWidth = +w; ctx.beginPath();
-        for (const b of list) { ctx.moveTo(b.x, b.y); ctx.quadraticCurveTo(b.x + b.bend * .4, b.y - b.l * .6, b.x + b.bend, b.y - b.l); }
-        ctx.stroke();
-      }
-    }
-  }
-
-  function drawMeadow(cv) {
-    const W = cv.clientWidth, H = cv.clientHeight;
-    if (!W || !H) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    const ctx = cv.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineCap = "round";
-    const r = rngFrom(+cv.dataset.seed || 1);
-    const hills = LAYOUTS[cv.dataset.layout] || slideLayout(r);
-    const density = W < 700 ? 0.11 : 0.085; // helai per px²
-    const scaleK = Math.max(.75, Math.min(1.25, W / 1200));
-
-    hills.forEach((h) => {
-      const cx = h.cx * W, hw = h.w * W, peak = h.h * H * .92;
-      const topAt = (x) => { const u = (x - cx) / hw; return u * u >= 1 ? H : H - peak * Math.sqrt(1 - u * u); };
-
-      // badan bukit
-      const g = ctx.createLinearGradient(0, H - peak, 0, H);
-      g.addColorStop(0, "#6fb53a"); g.addColorStop(.35, "#3f8a22"); g.addColorStop(1, "#1d4a10");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx - hw, H);
-      for (let x = cx - hw; x <= cx + hw; x += 6) ctx.lineTo(x, topAt(x));
-      ctx.lineTo(cx + hw, H); ctx.closePath(); ctx.fill();
-
-      // bayangan lembut di sisi kanan (cahaya dari kiri atas)
-      const sg = ctx.createLinearGradient(cx - hw, 0, cx + hw, 0);
-      sg.addColorStop(0, "rgba(255,255,200,.10)"); sg.addColorStop(.55, "rgba(0,0,0,0)"); sg.addColorStop(1, "rgba(0,30,0,.28)");
-      ctx.fillStyle = sg; ctx.fill();
-
-      // helai rumput
-      const area = hw * 2 * peak * .6;
-      const n = Math.floor(area * density);
-      const blades = [];
-      for (let k = 0; k < n; k++) {
-        const x = cx - hw + r() * hw * 2;
-        const top = topAt(x);
-        if (top >= H - 2) continue;
-        const t = Math.pow(r(), 1.7);           // lebih rapat di dekat puncak
-        const y = top + (H - top) * t + 2;
-        const persp = .75 + (y / H) * .7;
-        const l = (5 + r() * 11) * persp * scaleK;
-        const side = (cx - x) / hw;            // +1 kiri (terang), -1 kanan (gelap)
-        let light = .82 - t * .75 + side * .12 + (r() - .5) * .22;
-        light = Math.max(0, Math.min(.999, light));
-        blades.push({ x, y, l, bend: (r() - .5) * l * .9, c: shade(Math.floor(light * SHADES), HUES[Math.floor(r() * 3)]), w: persp > 1.15 ? 1.6 : 1.1 });
-      }
-      blades.sort((a, b) => a.y - b.y);
-      strokeBlades(ctx, blades);
-
-      // bunga kecil
-      const fl = Math.floor(hw / 70);
-      for (let k = 0; k < fl; k++) {
-        const x = cx - hw * .85 + r() * hw * 1.7, top = topAt(x);
-        if (top >= H - 4) continue;
-        const y = top + (H - top) * (.05 + r() * .4);
-        const cluster = 2 + Math.floor(r() * 4);
-        const petal = r() < .6 ? "#ffffff" : (r() < .5 ? "#cfe3ff" : "#ffd3e6");
-        for (let c = 0; c < cluster; c++) {
-          const fx = x + (r() - .5) * 18, fy = y + (r() - .5) * 8, fr = (1.6 + r() * 1.6) * (.8 + y / H * .6);
-          ctx.fillStyle = petal;
-          for (let a = 0; a < 5; a++) { ctx.beginPath(); ctx.arc(fx + Math.cos(a * 1.257) * fr, fy + Math.sin(a * 1.257) * fr, fr * .75, 0, 7); ctx.fill(); }
-          ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(fx, fy, fr * .55, 0, 7); ctx.fill();
-        }
-      }
-    });
-
-    // kabut cahaya
-    const fog = ctx.createLinearGradient(0, 0, W, 0);
-    fog.addColorStop(0, "rgba(255,255,255,.10)"); fog.addColorStop(.5, "rgba(255,255,255,0)"); fog.addColorStop(1, "rgba(255,255,255,.06)");
-    ctx.fillStyle = fog; ctx.fillRect(0, 0, W, H);
-  }
-
-  function drawFrontGrass(cv) {
-    const W = cv.clientWidth, H = cv.clientHeight;
-    if (!W || !H) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    const ctx = cv.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineCap = "round";
-    const r = rngFrom(+cv.dataset.seed || 1);
-    const blades = [];
-    const n = Math.floor(W * 2.2);
-    for (let k = 0; k < n; k++) {
-      const x = r() * W, y = H - r() * H * .35 + 4;
-      const l = 18 + r() * 42;
-      const light = Math.max(0, Math.min(.999, .25 + r() * .4 + (y < H * .8 ? .15 : 0)));
-      blades.push({ x, y, l, bend: (r() - .5) * 26, c: shade(Math.floor(light * SHADES), HUES[Math.floor(r() * 3)]), w: 1.8 });
-    }
-    blades.sort((a, b) => a.y - b.y);
-    strokeBlades(ctx, blades);
-  }
-
-  // Rumput digambar SEKALI per varian, lalu disalin (drawImage) ke canvas lain yang sama -> sangat cepat
-  const cache = new Map();
-  const keyOf = (cv) => `${cv.className}|${cv.dataset.layout || ""}|${cv.dataset.seed}|${cv.clientWidth}x${cv.clientHeight}`;
-  function paint(cv) {
-    const key = keyOf(cv);
-    if (!cv.clientWidth || !cv.clientHeight) return;
-    const src = cache.get(key);
-    if (src && src !== cv) {
-      cv.width = src.width; cv.height = src.height;
-      cv.getContext("2d").drawImage(src, 0, 0);
-    } else {
-      (cv.classList.contains("front-grass") ? drawFrontGrass : drawMeadow)(cv);
-      cache.set(key, cv);
-    }
-    cv.dataset.drawn = key;
-  }
+  /* ---------- Padang rumput: digambar di Web Worker (thread terpisah) ---------- */
   const canvases = [...document.querySelectorAll("canvas.meadow, canvas.front-grass")];
-
-  // yang terlihat di layar pertama digambar langsung
-  canvases.filter((c) => c.getBoundingClientRect().top < innerHeight * 1.5).forEach(paint);
-  // sisanya digambar satu per satu saat browser sedang santai (bukan saat scroll)
-  const idle = window.requestIdleCallback || ((fn) => setTimeout(() => fn({ timeRemaining: () => 8 }), 60));
-  const queue = canvases.filter((c) => !c.dataset.drawn);
-  const pump = (deadline) => {
-    while (queue.length && deadline.timeRemaining() > 4) {
-      const c = queue.shift();
-      if (!c.dataset.drawn) paint(c);
-      if (!cache.has(keyOf(c))) break; // gambar baru yang berat: lanjut di jeda berikutnya
-    }
-    if (queue.length) idle(pump, { timeout: 500 });
-  };
-  addEventListener("load", () => idle(pump, { timeout: 500 }), { once: true });
-  // jaga-jaga: kalau pengguna scroll lebih cepat dari antrian
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => { if (e.isIntersecting && !e.target.dataset.drawn) paint(e.target); });
-  }, { rootMargin: "600px 0px" });
-  canvases.forEach((c) => io.observe(c));
-
+  const optsOf = (cv) => ({
+    W: Math.round(cv.clientWidth), H: Math.round(cv.clientHeight), dpr: Math.min(window.devicePixelRatio || 1, 1.5),
+    kind: cv.classList.contains("front-grass") ? "front" : "meadow", layout: cv.dataset.layout || "", seed: +cv.dataset.seed || 1,
+  });
+  // urutan: yang paling dekat layar lebih dulu
+  const ordered = () => canvases.slice().sort((a, b) => Math.abs(a.getBoundingClientRect().top) - Math.abs(b.getBoundingClientRect().top));
+  let drawAll;
+  if (window.Worker && "transferControlToOffscreen" in HTMLCanvasElement.prototype) {
+    const worker = new Worker("meadow.js");
+    canvases.forEach((cv, id) => {
+      cv.dataset.mid = id;
+      const off = cv.transferControlToOffscreen();
+      worker.postMessage({ type: "init", id, canvas: off }, [off]);
+    });
+    drawAll = () => ordered().forEach((cv) => { const o = optsOf(cv); if (o.W && o.H) worker.postMessage({ type: "draw", id: +cv.dataset.mid, ...o }); });
+    drawAll();
+  } else {
+    // cadangan: gambar di halaman, satu per satu saat browser santai
+    const s = document.createElement("script");
+    s.src = "meadow.js";
+    s.onload = () => {
+      const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
+      drawAll = () => { const q = ordered(); const step = () => { const cv = q.shift(); if (!cv) return; const o = optsOf(cv); if (o.W && o.H) window.Meadow.render(cv, o); idle(step); }; idle(step); };
+      drawAll();
+    };
+    document.head.appendChild(s);
+  }
   let rt, lastW = innerWidth;
   addEventListener("resize", () => {
     if (innerWidth === lastW) return; // abaikan perubahan tinggi (address bar HP)
-    lastW = innerWidth;
-    clearTimeout(rt);
-    rt = setTimeout(() => { cache.clear(); canvases.forEach((c) => { delete c.dataset.drawn; }); canvases.forEach(paint); }, 300);
+    lastW = innerWidth; clearTimeout(rt);
+    rt = setTimeout(() => drawAll && drawAll(), 300);
   });
 
   /* ---------- Lapisan awan penyambung antar bagian ---------- */

@@ -9,8 +9,10 @@ HTML + CSS + JS murni, tanpa proses build. Siap deploy ke Vercel.
 | `index.html` | Kerangka halaman |
 | `style.css` | Semua tampilan |
 | `projects.js` | **Data proyek** — edit di sini |
-| `main.js` | Membuat slide proyek, judul chrome, rumput (canvas), awan penyambung |
+| `main.js` | Membuat slide proyek, kupu-kupu, awan penyambung, mengatur rumput |
+| `meadow.js` | Menggambar rumput (dijalankan di Web Worker) |
 | `motion.js` | Animasi: Lenis smooth scroll, GSAP + ScrollTrigger, kursor, tombol magnetik, tilt 3D |
+| `fonts/` | Font lokal (DM Sans, Poppins, Great Vibes) |
 | `vendor/` | GSAP 3.12.5, ScrollTrigger, Lenis 1.1.20 (disimpan lokal) |
 | `vercel.json` | Header keamanan & cache |
 
@@ -29,11 +31,16 @@ HTML + CSS + JS murni, tanpa proses build. Siap deploy ke Vercel.
 - Progress bar & tombol "kembali ke atas" dengan cincin progres
 - Menghormati pengaturan **"Kurangi gerakan"** (prefers-reduced-motion): animasi dimatikan otomatis
 
-## Performa
-- Rumput (canvas) digambar sekali per varian lalu disalin, dan dirender saat browser santai, bukan saat scroll.
-- Efek blur kaca (backdrop-filter) hanya di menu; awan memakai gradien, bukan filter blur.
-- Judul chrome (filter SVG berat) dihitung sekali lalu digerakkan sebagai layer GPU.
+## Performa (target: mengikuti refresh rate layar, 60/120/144 Hz)
+- **Judul chrome = gambar WebP** yang sudah dirender (`images/title/`). Efek logamnya berat, jadi dihitung sekali saat build, bukan di browser pengunjung.
+- **Rumput digambar di Web Worker** (`meadow.js`, OffscreenCanvas) = thread terpisah, tidak mengganggu animasi/scroll. Browser lama otomatis pakai cara cadangan.
+- **Semua animasi hanya `transform`/`opacity`** → dikerjakan GPU (kursor, kupu-kupu, loader, awan, dekorasi).
+- Tanpa `backdrop-filter` & `filter: blur` di elemen yang bergerak.
+- Setup animasi dipecah kecil-kecil selama loader; posisi ScrollTrigger dihitung saat loader masih menutup layar.
+- Font & gambar lokal + preload; screenshot WebP (46 KB, sebelumnya 500 KB).
 - Animasi di bagian yang tidak terlihat dijeda otomatis.
+
+Mengubah tulisan judul: render ulang gambar di `images/title/` (lihat riwayat proyek), lalu ganti file WebP-nya.
 
 ## Keamanan
 - **Content-Security-Policy ketat**: hanya script dari domain sendiri (`script-src 'self'`), tanpa inline script, tanpa `eval`. Script sisipan (XSS) dari luar tidak akan dijalankan.

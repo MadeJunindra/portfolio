@@ -11,9 +11,11 @@
   <meta name="theme-color" content="#8fc3f0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gluten:wght@500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Great+Vibes&family=Poppins:wght@600;800&family=Sacramento&display=swap" rel="stylesheet">
+  <!-- Font & gambar judul disimpan lokal, dimuat lebih dulu -->
+  <link rel="preload" href="fonts/dmsans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/poppins-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/greatvibes-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="images/title/word.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,7 +32,7 @@
 
   <!-- Progres scroll, kursor, kembali ke atas -->
   <div class="progress" aria-hidden="true"><i id="progress"></i></div>
-  <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"><b class="cursor-label"></b></span></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"><span class="cursor-ring-in"><b class="cursor-label"></b></span></span></div>
   <a href="#top" class="to-top" id="toTop" aria-label="Kembali ke atas">
     <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" id="topRing" cx="24" cy="24" r="21"/><path d="M24 31V17m-6 6 6-6 6 6"/></svg>
   </a>
@@ -58,7 +60,16 @@
 
       <div class="hero-title">
         <h1 class="sr-only">Portofolio Made Junindra</h1>
-        <svg id="chromeTitle" aria-hidden="true"></svg>
+        <div class="title-art" id="chromeTitle" aria-hidden="true">
+          <img class="title-word" src="images/title/word.webp" alt="" width="1700" height="931" decoding="async" fetchpriority="high">
+          <span class="deco d1"><img class="deco-float" src="images/title/d1.webp" alt="" decoding="async"></span>
+          <span class="deco d2"><img class="deco-float" src="images/title/d2.webp" alt="" decoding="async"></span>
+          <span class="deco d3"><img class="deco-twinkle" src="images/title/d3.webp" alt="" decoding="async"></span>
+          <span class="deco d4"><img class="deco-twinkle" src="images/title/d4.webp" alt="" decoding="async"></span>
+          <span class="deco d5"><img class="deco-float" src="images/title/d5.webp" alt="" decoding="async"></span>
+          <span class="deco d6"><img class="deco-float" src="images/title/d6.webp" alt="" decoding="async"></span>
+          <span class="deco d7"><img class="deco-float" src="images/title/d7.webp" alt="" decoding="async"></span>
+        </div>
         <p class="hero-sub">Karya pilihan · Web App · PWA · Website · AI</p>
       </div>
 

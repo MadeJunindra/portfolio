@@ -30,6 +30,7 @@
 
   const { gsap, ScrollTrigger } = window;
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
   gsap.config({ nullTargetWarn: false });
 
   /* ---------- Lenis smooth scroll ---------- */
@@ -92,7 +93,7 @@
   intro
     .from(".cover .sky", { scale: 1.15, duration: 2.2 }, 0)
     .from(".cover .meadow", { yPercent: 35, duration: 1.8 }, 0.1)
-    .from(".hero-title", { y: 140, scale: 0.6, rotation: -6, opacity: 0, duration: 1.6, ease: "elastic.out(1, 0.55)" }, 0.35)
+    .from(".hero-title", { y: 140, scale: 0.6, rotation: -6, opacity: 0.01, duration: 1.6, ease: "elastic.out(1, 0.55)" }, 0.35)
     .from(".hero-sub", { y: 30, opacity: 0, scale: 0.8, duration: 0.9, ease: "back.out(2.4)" }, 0.95)
     .from(".nav", { yPercent: -160, opacity: 0, duration: 1 }, 0.8)
     .from(".cover-foot p", { y: 24, opacity: 0, stagger: 0.12, duration: 0.9 }, 1.05)
@@ -108,16 +109,19 @@
     document.fonts ? document.fonts.ready : Promise.resolve(),
     new Promise((r) => (document.readyState === "complete" ? r() : addEventListener("load", r, { once: true }))),
     new Promise((r) => setTimeout(r, 900)),
+    Promise.all([...document.querySelectorAll("#chromeTitle img")].map((i) => (i.decode ? i.decode().catch(() => {}) : null))),
+    new Promise((r) => document.addEventListener("motion:setup", r, { once: true })),
   ]);
   const failSafe = new Promise((r) => setTimeout(r, 4000)); // jangan pernah macet di loader
   Promise.race([ready, failSafe]).then(() => {
     load.kill();
+    ScrollTrigger.refresh(); // hitung posisi semua animasi SELAGI loader masih menutup layar
     gsap.timeline()
       .to(prog, { v: 100, duration: 0.35, ease: "power1.out", onUpdate: () => { loaderNum.textContent = Math.round(prog.v); loaderBar.style.transform = `scaleX(${prog.v / 100})`; } })
       .to(".loader-inner", { y: -30, opacity: 0, duration: 0.5, ease: "power3.in" })
-      .to(loader, { clipPath: "inset(0 0 100% 0)", duration: 1, ease: "expo.inOut" }, "-=0.15")
+      .to(loader, { yPercent: -100, duration: 1, ease: "expo.inOut", force3D: true }, "-=0.15")
       .add(() => intro.play(), "-=0.55")
-      .add(() => { loader.remove(); if (lenis) lenis.start(); ScrollTrigger.refresh(); });
+      .add(() => { loader.remove(); if (lenis) lenis.start(); });
   });
 
   /* ---------- Progres scroll & tombol ke atas ---------- */
@@ -154,10 +158,10 @@
 
   // dekorasi chrome di judul: muncul "pop" setelah judul jadi
   function decoIn() {
-    const decos = $$("#chromeTitle .deco-float, #chromeTitle .deco-twinkle");
+    const decos = $$("#chromeTitle .deco");
     gsap.from(decos, { scale: 0, rotation: -120, transformOrigin: "50% 50%", opacity: 0, duration: 1.1, stagger: 0.08, ease: "back.out(2.2)", delay: 1.2 });
   }
-  if ($("#chromeTitle g")) decoIn(); else document.addEventListener("title:ready", decoIn, { once: true });
+  decoIn();
 
   // judul melayang naik-turun: digerakkan sebagai satu gambar di GPU, berhenti saat tidak terlihat
   gsap.to("#chromeTitle", {
@@ -165,24 +169,27 @@
     scrollTrigger: { trigger: ".cover", start: "top top", end: "bottom top", toggleActions: "play pause resume pause" },
   });
 
+  const tasks = [];
+
   /* ---------- Judul section: huruf naik bergelombang ---------- */
-  $$(".section-title").forEach((t) => {
+  $$(".section-title").forEach((t) => tasks.push(() => {
     const chars = split(t);
     gsap.from(chars, {
       yPercent: 120, rotation: 10, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.025,
       scrollTrigger: { trigger: t, start: "top 85%" },
     });
-  });
-  $$(".kicker").forEach((k) => gsap.from(k, { opacity: 0, x: -24, letterSpacing: ".5em", duration: 1, ease: "expo.out", scrollTrigger: { trigger: k, start: "top 88%" } }));
+  }));
+  tasks.push(() => $$(".kicker").forEach((k) => gsap.from(k, { opacity: 0, x: -24, letterSpacing: ".5em", duration: 1, ease: "expo.out", scrollTrigger: { trigger: k, start: "top 88%" } })));
 
   /* ---------- Daftar isi ---------- */
-  gsap.from(".toc-list li", {
+  tasks.push(() => gsap.from(".toc-list li", {
     y: 50, opacity: 0, rotationX: -40, transformPerspective: 800, transformOrigin: "50% 0%",
     duration: 0.9, ease: "expo.out", stagger: { each: 0.06, grid: "auto", from: "start" },
     scrollTrigger: { trigger: ".toc-list", start: "top 80%" },
-  });
+  }));
 
   /* ---------- Marquee: kecepatan ikut kecepatan scroll ---------- */
+  tasks.push(() => {
   const track = $("#marquee");
   if (track) {
     const words = ["Web App", "Progressive Web App", "Website", "AI Assistant", "UI / UX", "Laravel", "Node.js", "Smooth Motion"];
@@ -196,9 +203,10 @@
     else ScrollTrigger.create({ onUpdate: (s) => onVel(s.getVelocity() / 300) });
     gsap.from(".marquee", { rotation: -8, xPercent: -10, opacity: 0, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: ".marquee", start: "top 95%" } });
   }
+  });
 
   /* ---------- Slide proyek ---------- */
-  $$(".slide").forEach((slide) => {
+  $$(".slide").forEach((slide) => tasks.push(() => {
     const flip = slide.classList.contains("flip");
     const title = $("h2", slide);
     const chars = split(title);
@@ -216,14 +224,24 @@
     gsap.fromTo($(".stage", slide), { y: 70 }, { y: -70, ease: "none", scrollTrigger: st });
     gsap.fromTo($(".meadow", slide), { yPercent: 10 }, { yPercent: -4, ease: "none", scrollTrigger: st });
     gsap.fromTo($(".slide-num", slide), { y: -40 }, { y: 60, ease: "none", scrollTrigger: st });
-  });
+  }));
 
   /* ---------- Tentang & kontak ---------- */
+  tasks.push(() => {
   gsap.from(".about-card", { x: -80, rotation: -4, opacity: 0, duration: 1.3, ease: "expo.out", scrollTrigger: { trigger: ".about", start: "top 65%" } });
   gsap.from(".skill-stack .skill", { x: 90, rotation: 4, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.12, clearProps: "transform", scrollTrigger: { trigger: ".skill-stack", start: "top 75%" } });
   gsap.from(".contact .lead", { y: 30, opacity: 0, duration: 1, ease: "expo.out", scrollTrigger: { trigger: ".contact .lead", start: "top 88%" } });
   gsap.from(".contact-links .btn", { y: 40, scale: 0.7, opacity: 0, duration: 1, ease: "back.out(2.2)", stagger: 0.1, clearProps: "scale", scrollTrigger: { trigger: ".contact-links", start: "top 90%" } });
   gsap.from(".script-sm", { opacity: 0, x: 40, rotation: -8, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: ".footer", start: "top 98%" } });
+  });
+
+  // jalankan antrian setup sedikit-sedikit agar animasi loader tetap mulus
+  (function runTasks() {
+    const t0 = performance.now();
+    while (tasks.length && performance.now() - t0 < 8) tasks.shift()();
+    if (tasks.length) setTimeout(runTasks, 0);
+    else document.dispatchEvent(new Event("motion:setup"));
+  })();
 
   /* ---------- Interaksi mouse (desktop) ---------- */
   if (finePointer) {
@@ -285,7 +303,6 @@
   }, { passive: true });
 
   /* ---------- Refresh saat ukuran berubah / font siap ---------- */
-  document.addEventListener("title:ready", () => ScrollTrigger.refresh());
   let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => ScrollTrigger.refresh(), 300); });
 
   /* ---------- UI dasar (juga dipakai tanpa animasi) ---------- */
