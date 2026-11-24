@@ -35,9 +35,9 @@ test.describe("Halaman utama", () => {
     expect(problems).toEqual([]);
   });
 
-  test("header keamanan aktif (CSP tanpa unsafe-inline)", async ({ request }) => {
-    const res = await request.get("/");
-    const h = res.headers();
+  test("header keamanan aktif (CSP tanpa unsafe-inline)", async ({ page }) => {
+    const res = await page.goto("/");
+    const h = await res.allHeaders();
     expect(h["content-security-policy"]).toContain("script-src 'self'");
     expect(h["content-security-policy"]).not.toContain("unsafe-inline");
     expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
