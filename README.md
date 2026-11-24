@@ -1,6 +1,6 @@
 # Dejun — Portfolio
 
-[![CI](https://github.com/MadeJunindra/dejun-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/MadeJunindra/dejun-portfolio/actions/workflows/ci.yml)
+[![CI](https://github.com/MadeJunindra/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/MadeJunindra/portfolio/actions/workflows/ci.yml)
 
 Portofolio pribadi **Made Junindra (Dejun)** — Web & App Developer.
 Situs statis bertema _light glass_: HTML, CSS, dan JavaScript modul (ES modules) tanpa framework dan tanpa proses build.
