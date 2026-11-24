@@ -119,15 +119,15 @@
       onUpdate: () => { b.textContent = Math.round(o.v) + suffix; } });
   });
 
-  // kartu karya (dirender ulang saat filter)
-  function revealWorks() {
-    gsap.fromTo(".work", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease, stagger: 0.07, clearProps: "transform,opacity" });
-    ScrollTrigger.refresh();
-  }
+  // kartu karya: muncul saat pertama kali di-scroll (ganti filter dianimasikan oleh main.js)
   let worksShown = false;
-  ScrollTrigger.create({ trigger: "#works", start: "top 85%", once: true, onEnter: () => { worksShown = true; revealWorks(); } });
   gsap.set(".work", { opacity: 0 });
-  document.addEventListener("works:render", () => { if (worksShown) revealWorks(); else gsap.set(".work", { opacity: 0 }); });
+  ScrollTrigger.create({ trigger: "#works", start: "top 85%", once: true, onEnter: () => {
+    worksShown = true;
+    gsap.fromTo(".work", { y: 50, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 1, ease, stagger: 0.08, clearProps: "transform,opacity" });
+    gsap.from(".work .dev", { y: 60, opacity: 0, duration: 1.1, ease, stagger: 0.08, delay: 0.15, clearProps: "opacity" });
+  } });
+  document.addEventListener("works:render", () => { if (!worksShown) gsap.set(".work", { opacity: 0 }); ScrollTrigger.refresh(); });
 
   /* ---------- Interaksi mouse (desktop) ---------- */
   if (fine) {

@@ -227,10 +227,14 @@ svg { width: 1em; height: 1em; flex: none; }
 .tool span:last-child { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
 
 /* ---------- Karya ---------- */
-.filters { display: flex; gap: 4px; padding: 5px; border-radius: 999px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
-.filters button { flex: none; border: 0; background: transparent; padding: 9px 15px; border-radius: 999px; font: 600 13.5px var(--font); color: var(--muted); cursor: pointer; transition: background-color .25s, color .25s; }
-.filters button[aria-selected="true"] { background: #0d0e1a; color: #fff; }
-.works { display: grid; gap: 18px; }
+.filters { position: relative; display: flex; gap: 4px; padding: 5px; border-radius: 999px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+.filter-pill { position: absolute; left: 0; top: 5px; bottom: 5px; width: 0; border-radius: 999px; background: #0d0e1a; box-shadow: 0 8px 18px -8px rgba(13,14,26,.55);
+  transition: transform .5s cubic-bezier(.2,.8,.2,1), width .5s cubic-bezier(.2,.8,.2,1); will-change: transform; pointer-events: none; }
+.filters button { position: relative; z-index: 1; flex: none; border: 0; background: transparent; padding: 9px 15px; border-radius: 999px; font: 600 13.5px var(--font); color: var(--muted); cursor: pointer; transition: background-color .25s, color .25s; }
+.filters button[aria-selected="true"] { color: #fff; }
+.filters button:not([aria-selected="true"]):hover { color: var(--ink); }
+.works { overflow: visible; }
+.works { display: grid; gap: 18px; align-content: start; align-items: start; }
 @media (min-width: 680px) { .works { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1040px) { .works { grid-template-columns: repeat(3, 1fr); } }
 .work { display: flex; flex-direction: column; padding: 10px; border-radius: 26px; cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100%;

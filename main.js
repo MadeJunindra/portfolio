@@ -119,13 +119,77 @@
     document.dispatchEvent(new CustomEvent("works:render"));
   }
   renderWorks();
+
+  /* ---------- Animasi ganti filter (Web Animations API, tanpa library) ---------- */
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canAnimate = !reduceMotion && typeof Element.prototype.animate === "function";
+  const EASE = "cubic-bezier(.2,.8,.2,1)";
+  let busy = false;
+
+  // indikator "pill" yang meluncur ke filter aktif
+  const pill = document.createElement("span");
+  pill.className = "filter-pill"; pill.setAttribute("aria-hidden", "true");
+  filtersEl.prepend(pill);
+  function movePill(instant) {
+    const b = $('button[aria-selected="true"]', filtersEl); if (!b) return;
+    if (instant) pill.style.transition = "none";
+    pill.style.width = b.offsetWidth + "px";
+    pill.style.transform = `translateX(${b.offsetLeft}px)`;
+    if (instant) { void pill.offsetWidth; pill.style.transition = ""; }
+  }
+  movePill(true);
+  addEventListener("resize", () => movePill(true));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => movePill(true));
+
+  function animateIn(fromIndex) {
+    if (!canAnimate) return;
+    [...worksEl.children].slice(fromIndex || 0).forEach((card, k) => {
+      const delay = k * 70;
+      card.animate([
+        { opacity: 0, transform: "perspective(900px) translateY(36px) scale(.94) rotateX(-10deg)" },
+        { opacity: 1, transform: "none" },
+      ], { duration: 700, delay, easing: EASE, fill: "backwards" });
+      const dev = $(".dev", card);
+      if (dev) dev.animate([
+        { transform: "translateX(-50%) translateY(45%)", opacity: 0 },
+        { transform: "translateX(-50%)", opacity: 1 },
+      ], { duration: 900, delay: delay + 120, easing: EASE, fill: "backwards" });
+    });
+  }
+  function swapWorks(mutate) {
+    if (!canAnimate) { mutate(); renderWorks(); return; }
+    if (busy) return;
+    busy = true;
+    const oldCards = [...worksEl.children];
+    const h0 = worksEl.offsetHeight;
+    const outs = oldCards.map((c, k) => c.animate([
+      { opacity: 1, transform: "none" },
+      { opacity: 0, transform: "translateY(-14px) scale(.96)" },
+    ], { duration: 260, delay: k * 25, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" }).finished);
+    Promise.all(outs).then(() => {
+      mutate();
+      renderWorks();
+      const h1 = worksEl.offsetHeight;
+      if (h0 !== h1) worksEl.animate([{ height: h0 + "px" }, { height: h1 + "px" }], { duration: 500, easing: EASE });
+      animateIn(0);
+      busy = false;
+    }, () => { busy = false; });
+  }
   filtersEl.addEventListener("click", (e) => {
     const b = e.target.closest("button[data-cat]"); if (!b) return;
-    active = b.dataset.cat;
-    $$("button", filtersEl).forEach((x) => x.setAttribute("aria-selected", String(x === b)));
-    renderWorks();
+    if (b.dataset.cat === active || busy) return;
+    $$("button[data-cat]", filtersEl).forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+    movePill(false);
+    swapWorks(() => { active = b.dataset.cat; });
   });
-  moreBtn.addEventListener("click", () => { expanded = true; renderWorks(); });
+  moreBtn.addEventListener("click", () => {
+    const before = worksEl.children.length, h0 = worksEl.offsetHeight;
+    expanded = true; renderWorks();
+    if (canAnimate) {
+      worksEl.animate([{ height: h0 + "px" }, { height: worksEl.offsetHeight + "px" }], { duration: 600, easing: EASE });
+      animateIn(before);
+    }
+  });
 
   /* ---------- Modal detail ---------- */
   const modal = $("#modal"), modalBody = $("#modalBody");
