@@ -38,8 +38,12 @@ export function initContact(site) {
   const form = $("#contactForm");
   const note = $("#formNote");
   const fields = { name: form.elements.name, email: form.elements.email, message: form.elements.message };
-  $('button[data-via="wa"]', form).hidden = !hasWa;
-  $('button[data-via="email"]', form).hidden = !hasEmail;
+  const btnWa = $('button[data-via="wa"]', form);
+  const btnEmail = $('button[data-via="email"]', form);
+  btnWa.hidden = !hasWa;
+  btnEmail.hidden = !hasEmail;
+  // jika hanya email yang tersedia, tombol email menjadi tombol utama
+  if (!hasWa && hasEmail) btnEmail.classList.replace("btn-glass", "btn-dark");
 
   const channels = [hasWa && "WhatsApp", hasEmail && "Gmail / aplikasi email"].filter(Boolean).join(" atau ");
   const defaultNote = channels

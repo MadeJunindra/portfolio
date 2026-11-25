@@ -17,13 +17,18 @@ function watchProblems(page) {
   return problems;
 }
 
-/** Ganti data.js dengan kontak contoh yang valid (untuk tes form). */
-async function withContacts(page) {
-  const body = DATA_JS.replace('"email@anda.com"', '"tes@contoh.co"').replace('"62XXXXXXXXXX"', '"6281234567890"');
+/** Ganti kontak di data.js (agar tes tidak bergantung pada data asli). */
+async function withSiteData(page, { email, whatsapp }) {
+  const body = DATA_JS.replace(/email: "[^"]*"/, `email: "${email}"`).replace(
+    /whatsapp: "[^"]*"/,
+    `whatsapp: "${whatsapp}"`,
+  );
   await page.route("**/assets/js/data.js", (route) =>
     route.fulfill({ status: 200, contentType: "text/javascript", body }),
   );
 }
+const withContacts = (page) => withSiteData(page, { email: "tes@contoh.co", whatsapp: "6281234567890" });
+const withoutContacts = (page) => withSiteData(page, { email: "email@anda.com", whatsapp: "62XXXXXXXXXX" });
 
 test.describe("Halaman utama", () => {
   test("tampil tanpa error, tanpa pelanggaran CSP, tanpa file hilang", async ({ page }) => {
@@ -110,6 +115,7 @@ test.describe("Karya", () => {
 
 test.describe("Kontak", () => {
   test("tanpa email/WhatsApp: form disembunyikan, tampil pemberitahuan", async ({ page }) => {
+    await withoutContacts(page);
     await page.goto("/#kontak");
     await expect(page.locator("#contactForm")).toBeHidden();
     await expect(page.locator("#contactFallback")).toBeVisible();
@@ -198,5 +204,15 @@ test.describe("Navigasi & ketahanan", () => {
     await expect(page.locator(".hn-nick")).toBeVisible();
     await expect(page.locator("#works .work").first()).toBeVisible();
     expect(problems.filter((p) => !p.includes("vendor") && !p.includes("net::ERR_FAILED"))).toEqual([]);
+  });
+});
+
+test.describe("Profil", () => {
+  test("foto profil tampil di bingkai hero", async ({ page }) => {
+    await page.goto("/");
+    const img = page.locator("#portraitInner img");
+    await expect(img).toBeVisible();
+    await expect(img).toHaveAttribute("alt", /Foto/);
+    expect(await img.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
   });
 });

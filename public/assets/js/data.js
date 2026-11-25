@@ -9,8 +9,8 @@ export const SITE = {
   name: "Made Junindra",
   role: "Web & App Developer",
   intro: "Saya membangun aplikasi web dan PWA yang rapi, cepat, dan benar-benar dipakai — dari ide sampai online.",
-  photo: "", // contoh: "images/profile.webp" (kosong = monogram)
-  email: "email@anda.com", // GANTI
+  photo: "images/profile.webp", // kosong = monogram "DJ"
+  email: "dekjun84@gmail.com",
   whatsapp: "62XXXXXXXXXX", // GANTI: format 62xxxxxxxxxx tanpa + dan spasi
   location: "Indonesia",
   github: "https://github.com/MadeJunindra",
