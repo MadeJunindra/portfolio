@@ -1824,3 +1824,27 @@ svg {
   margin: 14px 0 26px;
   color: var(--muted);
 }
+
+/* ---------- Kontak belum diatur ---------- */
+.contact-fallback {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 10px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px dashed rgb(114 88 255 / 35%);
+  border-radius: 26px;
+  background: rgb(255 255 255 / 60%);
+}
+
+.contact-fallback h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.contact-fallback p:not(.eyebrow) {
+  margin: 0 0 8px;
+  color: var(--muted);
+}

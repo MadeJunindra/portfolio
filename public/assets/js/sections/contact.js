@@ -2,7 +2,7 @@
  * Kontak: daftar kontak + form yang membuka WhatsApp / Gmail.
  * Tidak ada data yang dikirim ke server mana pun.
  */
-import { $, $$ } from "../lib/dom.js";
+import { $ } from "../lib/dom.js";
 import { html, render } from "../lib/html.js";
 import {
   MIN_MESSAGE,
@@ -51,10 +51,18 @@ export function initContact(site) {
     note.classList.toggle("err", isError);
   };
   setNote(defaultNote);
-  if (!channels)
-    $$("input, select, textarea", form).forEach((el) => {
-      el.disabled = true;
-    });
+
+  // Belum ada email/WhatsApp → sembunyikan form (jangan tampilkan form yang tidak bisa dipakai)
+  if (!channels) {
+    form.hidden = true;
+    const fallback = $("#contactFallback");
+    fallback.hidden = false;
+    const gh = $("#fallbackGithub");
+    if (site.github) gh.href = site.github;
+    else gh.hidden = true;
+    console.info("[portfolio] Form kontak nonaktif: isi `email` atau `whatsapp` di public/assets/js/data.js.");
+    return;
+  }
 
   // penghitung karakter
   const counter = $("#msgCount");

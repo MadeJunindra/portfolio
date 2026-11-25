@@ -109,11 +109,21 @@ test.describe("Karya", () => {
 });
 
 test.describe("Kontak", () => {
-  test("kontak contoh (placeholder) tidak ditampilkan", async ({ page }) => {
+  test("tanpa email/WhatsApp: form disembunyikan, tampil pemberitahuan", async ({ page }) => {
     await page.goto("/#kontak");
-    await expect(page.locator('button[data-via="wa"]')).toBeHidden();
-    await expect(page.locator('button[data-via="email"]')).toBeHidden();
-    await expect(page.locator("#formNote")).toContainText("belum diatur");
+    await expect(page.locator("#contactForm")).toBeHidden();
+    await expect(page.locator("#contactFallback")).toBeVisible();
+    await expect(page.locator("#fallbackGithub")).toHaveAttribute("href", /^https:\/\/github\.com\//);
+  });
+
+  test("dengan kontak: form bisa diketik", async ({ page }) => {
+    await withContacts(page);
+    await page.goto("/#kontak");
+    await expect(page.locator("#contactFallback")).toBeHidden();
+    const name = page.locator('input[name="name"]');
+    await expect(name).toBeEnabled();
+    await name.fill("Tes ketik");
+    await expect(name).toHaveValue("Tes ketik");
   });
 
   test("validasi per kolom", async ({ page }) => {
