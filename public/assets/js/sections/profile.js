@@ -12,12 +12,12 @@ const TOOLS = [
   ["Node.js", "N", "#237032"],
   ["Laravel", "L", "#e03131"],
   ["PHP", "php", "#5f3dc4"],
-  ["PWA", "PWA", "#5534e0"],
+  ["PWA", "PWA", "#1d4ed8"],
   ["GSAP", "GS", "#1e6b31"],
   ["Apps Script", "AS", "#1864ab"],
   ["GitHub Actions", "GA", "#212529"],
   ["Vercel", "▲", "#0d0e1a"],
-  ["AI / LLM", "AI", "#7a35d8"],
+  ["AI / LLM", "AI", "#0e7490"],
 ];
 
 /** Warna diterapkan lewat CSSOM (bukan atribut style) → CSP tanpa 'unsafe-inline'. */

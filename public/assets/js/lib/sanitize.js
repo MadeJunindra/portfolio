@@ -13,7 +13,7 @@ export function safeUrl(value) {
 }
 
 /** Warna hanya format hex (#abc, #aabbcc, #aabbccdd). */
-export function safeColor(value, fallback = "#7258ff") {
+export function safeColor(value, fallback = "#2563eb") {
   return /^#[0-9a-f]{3,8}$/i.test(String(value)) ? String(value) : fallback;
 }
 

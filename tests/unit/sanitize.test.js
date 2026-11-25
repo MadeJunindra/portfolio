@@ -26,7 +26,7 @@ test("safeUrl hanya menerima https", () => {
 test("safeColor hanya hex", () => {
   assert.equal(safeColor("#abc"), "#abc");
   assert.equal(safeColor("#AABBCC"), "#AABBCC");
-  assert.equal(safeColor("red; background:url(x)"), "#7258ff");
+  assert.equal(safeColor("red; background:url(x)"), "#2563eb");
   assert.equal(safeColor("expression(alert(1))", "#000"), "#000");
 });
 
@@ -90,7 +90,7 @@ test("normalizeProjects menyaring data berbahaya", () => {
     { tagline: "tanpa judul" },
   ]);
   assert.equal(p.category, "website");
-  assert.equal(p.accent, "#7258ff");
+  assert.equal(p.accent, "#2563eb");
   assert.equal(p.device, "phone");
   assert.deepEqual(p.links, { repo: "https://github.com/x" });
   assert.equal(normalizeProjects("bukan array").length, 0);
